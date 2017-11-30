@@ -1,10 +1,17 @@
 package database;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorWrapper;
+import android.database.sqlite.SQLiteDatabase;
 
 
+import com.example.kiennhan.when2leave.model.Account;
+import com.example.kiennhan.when2leave.model.Address;
+import com.example.kiennhan.when2leave.model.Meetings;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -15,27 +22,6 @@ public class DataCursorWrapper extends CursorWrapper {
     public DataCursorWrapper(Cursor cursor) {
         super(cursor);
     }
-/*
-    public Crime getCrime() {
-        String uuidString = getString(getColumnIndex(CrimeTable.Cols.UUID));
-        String title = getString(getColumnIndex(CrimeTable.Cols.TITLE));
-        long date = getLong(getColumnIndex(CrimeTable.Cols.DATE));
-        int isSolved = getInt(getColumnIndex(CrimeTable.Cols.SOLVED));
-        String suspect = getString(getColumnIndex(CrimeTable.Cols.SUSPECT));
 
-        Crime crime = new Crime(UUID.fromString(uuidString));
-        crime.setTitle(title);
-        crime.setDate(new Date(date));
-        crime.setSolved(isSolved != 0);
-        crime.setSuspect(suspect);
 
-        return crime;
-    }
-
-    public Image getImage(Context context) {
-        String name = getString(getColumnIndex(CrimeDbSchema.ImageTable.Cols.FILE_NAME));
-        Image image = new Image(context,null, name, 0);
-        return image;
-    }
-    */
 }

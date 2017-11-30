@@ -8,6 +8,7 @@ import java.util.ArrayList;
  */
 
 public class Account {
+    private String uid;
     private String firstName;
     private String lastName;
     private String userName;
@@ -16,7 +17,8 @@ public class Account {
     private Address streetAddress;
     private ArrayList<Meetings> listOfMeetings = new ArrayList<Meetings>();
 
-    public Account(String firstName, String lastName, String userName, String email, String password, Address streetAddress, ArrayList<Meetings> listOfMeetings) {
+    public Account(String uid, String firstName, String lastName, String userName, String email, String password, Address streetAddress, ArrayList<Meetings> listOfMeetings) {
+        this.uid = uid;
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
@@ -24,6 +26,14 @@ public class Account {
         this.password = password;
         this.streetAddress = streetAddress;
         this.listOfMeetings = listOfMeetings;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public String getFirstName() {
