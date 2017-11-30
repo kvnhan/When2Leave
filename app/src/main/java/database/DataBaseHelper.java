@@ -63,10 +63,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public void addAccount(Context context, Account account) {
+    public void addAccount(Context context, Account account, String hash) {
         mDatabase = new DataBaseHelper(context).getWritableDatabase();
 
-        ContentValues values = getAccountValues(account);
+        ContentValues values = getAccountValues(account, hash);
         long i = mDatabase.insert(DbSchema.AccountTable.NAME, null, values);
         System.out.println(i);
         mDatabase.close();
@@ -83,7 +83,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public Address getAddress(Context context, String id) {
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
 
-        DataCursorWrapper cursor = queryCrimes(
+        DataCursorWrapper cursor = queryDatabase(DbSchema.AddressTable.NAME,
                 DbSchema.AddressTable.Cols.UID + "=?",
                 new String[]{id}
         );
@@ -103,25 +103,21 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return address;
     }
 
-
     public Account getAccount(Context context, String id) {
+        Address address = getAddress(context,id);
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
-
-        DataCursorWrapper cursor = queryCrimes(
+        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
                 DbSchema.AccountTable.Cols.UID + "=?",
                 new String[]{id}
         );
 
 
         cursor.moveToNext();
-        /*
-        Address address = getAddress(context,id);
-        */
         String firstName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.FIRST_NAME));
         String lastName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.LAST_NAME));
         String userName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.USER_NAME));
         String email = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.EMAIL));
-        Account account = new Account(id,firstName,lastName,userName,email, "", null, new ArrayList<Meetings>());
+        Account account = new Account(id,firstName,lastName,userName,email, "", address, new ArrayList<Meetings>());
 
         cursor.close();
         mDatabase.close();
@@ -129,10 +125,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return account;
     }
 
-    private DataCursorWrapper queryCrimes(String whereClause, String[] whereArgs) {
+    private DataCursorWrapper queryDatabase(String tableName, String whereClause, String[] whereArgs) {
 
         Cursor cursor = mDatabase.query(
-                DbSchema.AccountTable.NAME,
+                tableName,
                 null, // Columns - null selects all columns
                 whereClause,
                 whereArgs,
@@ -143,13 +139,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return new DataCursorWrapper(cursor);
     }
 
-    private static ContentValues getAccountValues(Account account) {
+
+    private static ContentValues getAccountValues(Account account, String hashPassword) {
         ContentValues values = new ContentValues();
         values.put(DbSchema.AccountTable.Cols.FIRST_NAME, account.getFirstName());
         values.put(DbSchema.AccountTable.Cols.LAST_NAME, account.getLastName());
         values.put(DbSchema.AccountTable.Cols.USER_NAME, account.getUserName());
         values.put(DbSchema.AccountTable.Cols.EMAIL, account.getEmail());
-        values.put(DbSchema.AccountTable.Cols.PASSWORD, account.getPassword());
+        values.put(DbSchema.AccountTable.Cols.PASSWORD, hashPassword);
         values.put(DbSchema.AccountTable.Cols.UID, account.getUid());
         return values;
     }

@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.example.kiennhan.when2leave.model.Account;
+import com.example.kiennhan.when2leave.model.Address;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,7 +26,6 @@ import static org.junit.Assert.*;
  */
 @RunWith(AndroidJUnit4.class)
 public class ExampleInstrumentedTest {
-    private Account account;
     private DataBaseHelper mDb;
 
     @Before
@@ -49,13 +49,64 @@ public class ExampleInstrumentedTest {
     @Test
     public void checkAccountTable() throws Exception {
         // Context of the app under test.
-       Account account = new Account("111", "Kien", "Nhan",
-               "kvnhan", "kvnhan@wpi.edu", "hello", null, null);
+        Address address = new Address("92", "Main Street", "01603", "MA", "Worcester");
+        Account account = new Account("111", "Kien", "Nhan",
+               "kvnhan", "kvnhan@wpi.edu", "hello", address, null);
+
         Context context = InstrumentationRegistry.getTargetContext();
-        mDb.addAccount(context, account);
+        String hash = account.hashPassword("hello");
+        mDb.addAddress(context,address,account);
+        mDb.addAccount(context, account, hash);
 
         Account retrievedAccount = mDb.getAccount(context, "111");
         assertTrue(retrievedAccount.getFirstName().equals("Kien"));
+    }
 
+    @Test
+    public void checkAddressTable() throws Exception{
+        // Context of the app under test.
+        Address address = new Address("92", "Main Street", "01603", "MA", "Worcester");
+        Account account = new Account("111", "Kien", "Nhan",
+                "kvnhan", "kvnhan@wpi.edu", "hello", address, null);
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        String hash = account.hashPassword("hello");
+        mDb.addAddress(context,address,account);
+        mDb.addAccount(context, account, hash);
+
+        Account retrievedAccount = mDb.getAccount(context, "111");
+        assertTrue(retrievedAccount.getStreetAddress().getCity().equals("Worcester"));
+    }
+
+    @Test
+    public void checkAccountTable2() throws Exception{
+        // Context of the app under test.
+        Address address = new Address("92", "Main Street", "01603", "MA", "Worcester");
+        Account account = new Account("111", "Kien", "Nhan",
+                "kvnhan", "kvnhan@wpi.edu", "hello", address, null);
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        String hash = account.hashPassword("hello");
+        mDb.addAddress(context,address,account);
+        mDb.addAccount(context, account, hash);
+
+        Account retrievedAccount = mDb.getAccount(context, "111");
+        assertFalse(retrievedAccount.getEmail().equals("kiennhan21@gmail.com"));
+    }
+
+    @Test
+    public void checkPassword() throws Exception{
+        // Context of the app under test.
+        Address address = new Address("92", "Main Street", "01603", "MA", "Worcester");
+        Account account = new Account("111", "Kien", "Nhan",
+                "kvnhan", "kvnhan@wpi.edu", "hello", address, null);
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        String hash = account.hashPassword("hello");
+        mDb.addAddress(context,address,account);
+        mDb.addAccount(context, account, hash);
+
+        Account retrievedAccount = mDb.getAccount(context, "111");
+        assertTrue(retrievedAccount.checkPassword("hello", hash));
     }
 }
