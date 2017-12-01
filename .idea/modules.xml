@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/When2Leave.iml" filepath="$PROJECT_DIR$/When2Leave.iml" />
-      <module fileurl="file://C:\Users\Kien Nhan\When2Leave\.idea\When2Leave.iml" filepath="C:\Users\Kien Nhan\When2Leave\.idea\When2Leave.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
