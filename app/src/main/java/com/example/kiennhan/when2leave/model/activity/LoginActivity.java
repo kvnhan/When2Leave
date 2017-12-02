@@ -29,6 +29,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -317,6 +318,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
+            // Local Database Account Authentication
+            // Store values at the time of the login attempt.
+            String email = mEmailView.getText().toString();
+            String password = mPasswordView.getText().toString();
+            Boolean accountExist = mDb.checkAccount(getApplicationContext(), email, email);
+            if(accountExist){
+                return true;
+            }else{
+                Toast.makeText(getApplicationContext(), "Email/Username does not exist", Toast.LENGTH_LONG).show();
+            }
+            /*
             try {
                 // Simulate network access.
                 Thread.sleep(2000);
@@ -331,6 +343,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     return pieces[1].equals(mPassword);
                 }
             }
+            */
 
             // TODO: register the new account here.
             return true;

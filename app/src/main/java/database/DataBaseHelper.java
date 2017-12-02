@@ -161,4 +161,52 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(DbSchema.AddressTable.Cols.UID, account.getUid());
         return values;
     }
+
+    public boolean checkAccount(Context context, String username, String email){
+        Boolean accountExist = false;
+        Boolean usernameExist = checkUsername(context, username);
+        Boolean emailExist = checkEmail(context, email);
+
+        if(usernameExist || emailExist){
+            accountExist = true;
+        }
+
+        return accountExist;
+    }
+
+    private boolean checkUsername(Context context, String username){
+        mDatabase = new DataBaseHelper(context).getReadableDatabase();
+        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                DbSchema.AccountTable.Cols.USER_NAME + "=?",
+                new String[]{username}
+        );
+
+        if(cursor.getCount() > 0){
+            mDatabase.close();
+            cursor.close();
+            return true;
+        }
+
+        cursor.close();
+        mDatabase.close();
+        return false;
+    }
+
+    private boolean checkEmail(Context context, String email){
+        mDatabase = new DataBaseHelper(context).getReadableDatabase();
+        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                DbSchema.AccountTable.Cols.EMAIL + "=?",
+                new String[]{email}
+        );
+
+        if(cursor.getCount() > 0){
+            mDatabase.close();
+            cursor.close();
+            return true;
+        }
+
+        cursor.close();
+        mDatabase.close();
+        return false;
+    }
 }
