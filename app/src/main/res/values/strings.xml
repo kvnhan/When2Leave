@@ -14,6 +14,8 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
+    <!-- Strings related to Sign Up -->
     <string name="FirstName">First Name</string>
     <string name="LastName">Last Name</string>
     <string name="UserName">Username</string>
@@ -29,4 +31,12 @@
     <string name="Password">Password - At least 7 character long</string>
     <string name="ConfirmPassword">Confirm Password</string>
     <string name="EmailOrUserName">Email or Username</string>
+
+
+    <!-- Strings related to Welcome Screen -->
+    <string name="Welcome">Welcome</string>
+    <string name="createEvent">Create Event</string>
+    <string name="viewEvent">View Event</string>
+    <string name="editEvent">Edit Event</string>
+
 </resources>
