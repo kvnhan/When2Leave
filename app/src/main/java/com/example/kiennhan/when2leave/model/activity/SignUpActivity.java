@@ -1,5 +1,6 @@
 package com.example.kiennhan.when2leave.model.activity;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -81,6 +82,8 @@ public class SignUpActivity extends AppCompatActivity {
 
 
                 //TODO: Create an intent and navigate to the welcome screen
+                Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
+                startActivity(intent);
             }
         });
     }

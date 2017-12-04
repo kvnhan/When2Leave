@@ -3,6 +3,7 @@ package com.example.kiennhan.when2leave.model.activity;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -50,6 +51,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
+
+    private boolean accExist = true;
 
     /**
      * A dummy authentication store containing known user names and passwords.
@@ -181,9 +184,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
+        }
+
+        if(TextUtils.isEmpty(password)){
+            mPasswordView.setError(getString(R.string.error_field_required));
+            focusView = mPasswordView;
             cancel = true;
         }
 
@@ -324,9 +329,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             String password = mPasswordView.getText().toString();
             Boolean accountExist = mDb.checkAccount(getApplicationContext(), email, email);
             if(accountExist){
+                accExist = true;
+                Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
+                startActivity(intent);
                 return true;
             }else{
-                Toast.makeText(getApplicationContext(), "Email/Username does not exist", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+                startActivity(intent);
             }
             /*
             try {
