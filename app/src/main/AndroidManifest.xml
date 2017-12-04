@@ -24,10 +24,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SignUpActivity"
+        <activity
+            android:name=".SignUpActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity android:name=".WelcomeActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity
+            android:name=".WelcomeActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity android:name=".CreateEventActivity"></activity>
     </application>
 
 </manifest>

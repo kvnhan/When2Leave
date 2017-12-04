@@ -39,4 +39,14 @@
     <string name="viewEvent">View Event</string>
     <string name="editEvent">Edit Event</string>
 
+    <!-- Strings related to Create Event Screen -->
+    <string name="EventName">Event Name</string>
+    <string name="EventLocation">Event Location</string>
+    <string name="DefaultLocation">Your Default Location</string>
+    <string name="When">When</string>
+    <string name="Time">Time</string>
+    <string name="Date">Date</string>
+    <string name="Description">Description</string>
+    <string name="CreateEvent">Create Event</string>
+
 </resources>
