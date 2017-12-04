@@ -14,5 +14,19 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
-    <string name="When2Leave">When2Leave</string>
+    <string name="FirstName">First Name</string>
+    <string name="LastName">Last Name</string>
+    <string name="UserName">Username</string>
+    <string name="EmailAddress">Email Address</string>
+    <string name="PhoneNumber">Phone Number</string>
+    <string name="HomeAddress">Home Address</string>
+    <string name="StreetNumber">Street Number</string>
+    <string name="StreetName">Street Name</string>
+    <string name="City">City</string>
+    <string name="State">State</string>
+    <string name="ZipCode">Zip Code</string>
+    <string name="createAccount">Create Account</string>
+    <string name="Password">Password - At least 7 character long</string>
+    <string name="ConfirmPassword">Confirm Password</string>
+
 </resources>
