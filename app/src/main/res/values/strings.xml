@@ -28,5 +28,5 @@
     <string name="createAccount">Create Account</string>
     <string name="Password">Password - At least 7 character long</string>
     <string name="ConfirmPassword">Confirm Password</string>
-
+    <string name="EmailOrUserName">Email or Username</string>
 </resources>
