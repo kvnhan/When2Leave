@@ -37,7 +37,7 @@
 
 
     <!-- Strings related to Welcome Screen -->
-    <string name="Welcome">Welcome</string>
+    <string name="Welcome">Welcome, %1$s </string>
     <string name="createEvent">Create Event</string>
     <string name="viewEvent">View Event</string>
     <string name="editEvent">Edit Event</string>

@@ -1,6 +1,8 @@
 package com.example.kiennhan.when2leave.model.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -9,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class WelcomeActivity extends AppCompatActivity {
@@ -16,6 +19,10 @@ public class WelcomeActivity extends AppCompatActivity {
     Button mCreateEvent;
     Button mEditEvent;
     Button mViewEvent;
+    TextView mWelcome;
+
+    private static final String KEY = "isLogin";
+    private static final String PREF = "MyPref";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +33,15 @@ public class WelcomeActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         myToolbar.setTitle("");
         myToolbar.setSubtitle("");
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+        String userName = pref.getString(KEY, null);
+        Resources res = getResources();
+        String text = String.format(res.getString(R.string.Welcome), userName);
+        mWelcome = findViewById(R.id.welcome);
+        mWelcome.setText(text);
+
+
         mCreateEvent = findViewById(R.id.createEvent);
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
