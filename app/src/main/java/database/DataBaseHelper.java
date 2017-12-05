@@ -27,11 +27,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.execSQL("create table " + DbSchema.MeetingTable.NAME + "(" +
                 " _id integer primary key autoincrement, " +
                 DbSchema.MeetingTable.Cols.UID + ", " +
+                DbSchema.MeetingTable.Cols.ID + ", " +
                 DbSchema.MeetingTable.Cols.TITLE + ", " +
-                DbSchema.MeetingTable.Cols.DATE + ", " +
-                DbSchema.MeetingTable.Cols.DESTINATION + ", " +
-                DbSchema.MeetingTable.Cols.LOCATION + ", " +
-                DbSchema.MeetingTable.Cols.TIME + ", " +
+                DbSchema.MeetingTable.Cols.DATE_ID + ", " +
+                DbSchema.MeetingTable.Cols.DESTINATION_ID + ", " +
+                DbSchema.MeetingTable.Cols.LOCATION_ID + ", " +
+                DbSchema.MeetingTable.Cols.TIME_ID + ", " +
                 DbSchema.MeetingTable.Cols.DESCRIPTION +
                 ")"
         );
@@ -39,6 +40,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.execSQL("create table " + DbSchema.AddressTable.NAME + "(" +
                 " _id integer primary key autoincrement, " +
                 DbSchema.AddressTable.Cols.STREET_NAME + ", " +
+                DbSchema.AddressTable.Cols.ID + ", " +
                 DbSchema.AddressTable.Cols.STREET_NUMBER + ", " +
                 DbSchema.AddressTable.Cols.STATE + ", " +
                 DbSchema.AddressTable.Cols.CITY + ", " +
@@ -73,11 +75,20 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void addAddress(Context context, Address address, Account account) {
+    public void addAddress(Context context, Address address, Account account, Boolean isSchedule, Meetings meeting) {
         mDatabase = new DataBaseHelper(context).getWritableDatabase();
-        ContentValues values = getAddressValues(address, account);
+        ContentValues values = getAddressValues(address, account, isSchedule, meeting);
         long i = mDatabase.insert(DbSchema.AddressTable.NAME, null, values);
         mDatabase.close();
+    }
+
+    public void addMeeting(Context context, Account account, Meetings meetings, Address user, Address des) {
+        mDatabase = new DataBaseHelper(context).getWritableDatabase();
+        ContentValues values = getMeetingValues(meetings, account);
+        long i = mDatabase.insert(DbSchema.MeetingTable.NAME, null, values);
+        mDatabase.close();
+        addAddress(context, user, account, true, meetings);
+        addAddress(context, des, account, true, meetings);
     }
 
     public Address getAddress(Context context, String id) {
@@ -95,7 +106,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String city = cursor.getString(cursor.getColumnIndex(DbSchema.AddressTable.Cols.CITY));
         String zipCode = cursor.getString(cursor.getColumnIndex(DbSchema.AddressTable.Cols.ZIPCODE));
 
-        Address address = new Address(streetNumber, streetName, zipCode, state, city);
+        Address address = new Address("", streetNumber, streetName, zipCode, state, city);
 
         cursor.close();
         mDatabase.close();
@@ -151,7 +162,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return values;
     }
 
-    private static ContentValues getAddressValues(Address address, Account account) {
+    private static ContentValues getAddressValues(Address address, Account account, Boolean isSchedule, Meetings meetings) {
         ContentValues values = new ContentValues();
         values.put(DbSchema.AddressTable.Cols.STREET_NAME, address.getStreetName());
         values.put(DbSchema.AddressTable.Cols.STREET_NUMBER, address.getStreetNumber());
@@ -159,13 +170,28 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(DbSchema.AddressTable.Cols.CITY, address.getCity());
         values.put(DbSchema.AddressTable.Cols.ZIPCODE, address.getZipCode());
         values.put(DbSchema.AddressTable.Cols.UID, account.getUid());
+        if(isSchedule){
+            values.put(DbSchema.AddressTable.Cols.ID, meetings.getId());
+        }
         return values;
     }
 
-    public boolean checkAccount(Context context, String username, String email){
+    private ContentValues getMeetingValues(Meetings meetings, Account account) {
+        ContentValues values = new ContentValues();
+        values.put(DbSchema.MeetingTable.Cols.DATE_ID, meetings.getId());
+        values.put(DbSchema.MeetingTable.Cols.DESCRIPTION, meetings.getDescription());
+        values.put(DbSchema.MeetingTable.Cols.DESTINATION_ID, meetings.getId());
+        values.put(DbSchema.MeetingTable.Cols.TITLE, meetings.getTitle());
+        values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, meetings.getId());
+        values.put(DbSchema.MeetingTable.Cols.TIME_ID, meetings.getId());
+        values.put(DbSchema.MeetingTable.Cols.UID, account.getUid());
+        return values;
+    }
+
+    public boolean checkAccount(Context context, String username, String password){
         Boolean accountExist = false;
         Boolean usernameExist = checkUsername(context, username);
-        Boolean emailExist = checkEmail(context, email);
+        Boolean emailExist = checkEmail(context, username);
 
         if(usernameExist || emailExist){
             accountExist = true;
@@ -209,4 +235,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         mDatabase.close();
         return false;
     }
+
+
 }

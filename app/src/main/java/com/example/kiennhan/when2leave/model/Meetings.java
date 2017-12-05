@@ -6,6 +6,8 @@ package com.example.kiennhan.when2leave.model;
  */
 
 public class Meetings {
+    private String id;
+    private String title;
     private Account account;
     private String timeOfM0eeting;
     private String dateOfMeeting;
@@ -13,7 +15,9 @@ public class Meetings {
     private Address destination;
     private String description;
 
-    public Meetings(Account account, String timeOfM0eeting, String dateOfMeeting, Address userLocation, Address destination, String description) {
+    public Meetings(String id, String title, Account account, String timeOfM0eeting, String dateOfMeeting, Address userLocation, Address destination, String description) {
+        this.id = id;
+        this.title = title;
         this.account = account;
         this.timeOfM0eeting = timeOfM0eeting;
         this.dateOfMeeting = dateOfMeeting;
@@ -22,6 +26,21 @@ public class Meetings {
         this.description = description;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTitle(){
+        return title;
+    }
     public Account getAccount() {
         return account;
     }

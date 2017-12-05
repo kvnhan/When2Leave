@@ -176,14 +176,18 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <EditText
-                    android:id="@+id/editText5"
+                <TextView
+                    android:id="@+id/textView3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/When"
-                    android:inputType="textPersonName"
-                    android:paddingTop="40dp" />
+                    android:paddingTop="40dp"
+                    android:text="@string/When"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"></LinearLayout>
 
                 <EditText
                     android:id="@+id/timePicker"
@@ -191,7 +195,7 @@
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:hint="@string/Time"
-                    android:inputType="time" />
+                    android:inputType="none" />
 
                 <EditText
                     android:id="@+id/datePicker"
@@ -199,7 +203,7 @@
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:hint="@string/Date"
-                    android:inputType="date" />
+                    android:inputType="none" />
 
             </LinearLayout>
 
@@ -208,19 +212,35 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <EditText
+                <TextView
+                    android:id="@+id/textView4"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/Description"
-                    android:paddingTop="40dp" />
+                    android:paddingTop="40dp"
+                    android:text="@string/Description"
+                    android:textSize="18sp" />
 
-                <EditText
-                    android:id="@+id/description"
+                <ScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="155dp"
-                    android:ems="10"
-                    android:inputType="textMultiLine" />
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" >
+
+                        <EditText
+                            android:id="@+id/description"
+                            android:layout_width="match_parent"
+                            android:layout_height="155dp"
+                            android:autoText="false"
+                            android:ems="10"
+                            android:gravity="top|left"
+                            android:inputType="textMultiLine"
+                            android:maxLength="250" />
+                    </LinearLayout>
+                </ScrollView>
+
             </LinearLayout>
 
             <RelativeLayout

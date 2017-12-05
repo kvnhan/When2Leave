@@ -5,18 +5,28 @@ package com.example.kiennhan.when2leave.model;
  */
 
 public class Address {
+    private String id;
     private String streetNumber;
     private String streetName;
     private String zipCode;
     private String state;
     private String city;
 
-    public Address(String streetNumber, String streetName, String zipCode, String state, String city) {
+    public Address(String id, String streetNumber, String streetName, String zipCode, String state, String city) {
+        this.id = id;
         this.streetNumber = streetNumber;
         this.streetName = streetName;
         this.zipCode = zipCode;
         this.state = state;
         this.city = city;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getStreetNumber() {

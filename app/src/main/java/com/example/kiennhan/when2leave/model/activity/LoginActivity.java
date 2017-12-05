@@ -327,7 +327,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Store values at the time of the login attempt.
             String email = mEmailView.getText().toString();
             String password = mPasswordView.getText().toString();
-            Boolean accountExist = mDb.checkAccount(getApplicationContext(), email, email);
+            Boolean accountExist = mDb.checkAccount(getApplicationContext(), email, password);
             if(accountExist){
                 accExist = true;
                 Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);

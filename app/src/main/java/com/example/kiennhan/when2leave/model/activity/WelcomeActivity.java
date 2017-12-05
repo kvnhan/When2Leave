@@ -23,6 +23,9 @@ public class WelcomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_welcome);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        myToolbar.setTitle("");
+        myToolbar.setSubtitle("");
         mCreateEvent = findViewById(R.id.createEvent);
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
             @Override

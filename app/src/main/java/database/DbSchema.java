@@ -5,12 +5,13 @@ public class DbSchema {
         public static final String NAME = "meetings";
 
         public static final class Cols {
+            public static final String ID = "id";
             public static final String UID = "uid";
             public static final String TITLE = "title";
-            public static final String DATE = "date";
-            public static final String DESTINATION = "destination";
-            public static final String LOCATION = "location";
-            public static final String TIME = "time";
+            public static final String DATE_ID = "date";
+            public static final String DESTINATION_ID = "destination";
+            public static final String LOCATION_ID = "location";
+            public static final String TIME_ID = "time";
             public static final String DESCRIPTION = "description";
         }
     }
@@ -19,6 +20,7 @@ public class DbSchema {
         public static final String NAME = "address";
 
         public static final class Cols {
+            public static final String ID = "id";
             public static final String STREET_NAME = "streetname";
             public static final String STREET_NUMBER = "streetnumber";
             public static final String STATE = "state";

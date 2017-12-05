@@ -56,6 +56,7 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String uniqueId = UUID.randomUUID().toString();
+                String streetId = UUID.randomUUID().toString() + uniqueId;
                 String firstName = mFirstName.getText().toString();
                 String lastName = mLastName.getText().toString();
                 String userName = mUserName.getText().toString();
@@ -69,21 +70,42 @@ public class SignUpActivity extends AppCompatActivity {
                 String state = mState.getText().toString();
                 String zipCode = mZipCode.getText().toString();
 
-                //TODO: Need to check for username in the database or server and check if confirm password
+                //TODO: Need to check for username/email in the database or server and check if confirm password
 
-                Address homeAddress = new Address(streetNumber, streetName,zipCode,state,city);
+                Address homeAddress = new Address("", streetNumber, streetName,zipCode,state,city);
                 Account newAccount = new Account(uniqueId, firstName, lastName, userName, emailAddress, password, homeAddress, new ArrayList<Meetings>());
                 String hashPassord = newAccount.hashPassword(password);
-
                 mDB = new DataBaseHelper(getApplicationContext());
 
-                mDB.addAddress(getApplicationContext(), homeAddress, newAccount);
-                mDB.addAccount(getApplicationContext(), newAccount, hashPassord);
+                boolean accountExist = mDB.checkAccount(getApplicationContext(), userName, password);
 
+                if(password.length() < 7){
+                    View focusView1 = null;
+                    mPassword.setError(getString(R.string.Password));
+                    focusView1 = mPassword;
+                    focusView1.requestFocus();
+                }else if(!password.equals(confirmPassword)){
+                    View focusView1 = null;
+                    View focusView2 = null;
+                    mPassword.setError(getString(R.string.UsedUsername));
+                    focusView1 = mPassword;
+                    focusView1.requestFocus();
+                    mPasswordConfirm.setError(getString(R.string.UsedUsername));
+                    focusView2 = mPasswordConfirm;
+                    focusView2.requestFocus();
+                }
 
-                //TODO: Create an intent and navigate to the welcome screen
-                Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
-                startActivity(intent);
+                if(!accountExist) {
+                    mDB.addAddress(getApplicationContext(), homeAddress, newAccount, false, null);
+                    mDB.addAccount(getApplicationContext(), newAccount, hashPassord);
+                    Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
+                    startActivity(intent);
+                }else{
+                    View focusView = null;
+                    mUserName.setError(getString(R.string.UsedUsername));
+                    focusView = mUserName;
+                    focusView.requestFocus();
+                }
             }
         });
     }
