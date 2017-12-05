@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.example.kiennhan.when2leave.model.Account;
 import com.example.kiennhan.when2leave.model.Address;
 import com.example.kiennhan.when2leave.model.Meetings;
+import com.example.kiennhan.when2leave.model.Password;
 
 import java.util.ArrayList;
 
@@ -17,6 +18,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private static final int VERSION = 1;
     private static final String DATABASE_NAME = "when2leave.db";
     private SQLiteDatabase mDatabase;
+    private boolean correctPw = false;
 
     public DataBaseHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
@@ -240,17 +242,19 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public boolean checkAccount(Context context, String username, String password){
         Boolean accountExist = false;
-        Boolean usernameExist = checkUsername(context, username);
-        Boolean emailExist = checkEmail(context, username);
+        Boolean usernameExist = checkUsername(context, username, password);
+        Boolean emailExist = checkEmail(context, username, password);
 
         if(usernameExist || emailExist){
-            accountExist = true;
+            if(correctPw) {
+                accountExist = true;
+            }
         }
 
         return accountExist;
     }
 
-    private boolean checkUsername(Context context, String username){
+    private boolean checkUsername(Context context, String username, String password){
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
         DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
                 DbSchema.AccountTable.Cols.USER_NAME + "=?",
@@ -258,6 +262,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         );
 
         if(cursor.getCount() > 0){
+            cursor.moveToNext();
+            String hashedpw = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.PASSWORD));
+            Password pw = new Password();
+            correctPw = pw.checkPassword(password,hashedpw);
             mDatabase.close();
             cursor.close();
             return true;
@@ -268,7 +276,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return false;
     }
 
-    private boolean checkEmail(Context context, String email){
+    private boolean checkEmail(Context context, String email, String password){
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
         DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
                 DbSchema.AccountTable.Cols.EMAIL + "=?",
@@ -276,6 +284,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         );
 
         if(cursor.getCount() > 0){
+            cursor.moveToNext();
+            String hashedpw = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.PASSWORD));
+            Password pw = new Password();
+            correctPw = pw.checkPassword(password,hashedpw);
             mDatabase.close();
             cursor.close();
             return true;
@@ -285,6 +297,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         mDatabase.close();
         return false;
     }
+
+
 
 
 }

@@ -3,11 +3,13 @@ package com.example.kiennhan.when2leave.model.activity;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -53,7 +55,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    private boolean accExist = true;
+    private boolean accExist = false;
 
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
@@ -333,7 +335,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             String email = mEmailView.getText().toString();
             String password = mPasswordView.getText().toString();
             Boolean accountExist = mDb.checkAccount(getApplicationContext(), email, password);
-            if(accountExist){
+            if(accountExist) {
                 accExist = true;
                 SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
                 final SharedPreferences.Editor editor = pref.edit();
@@ -342,28 +344,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
                 startActivity(intent);
                 return true;
-            }else{
-                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
-                startActivity(intent);
             }
-            /*
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-            */
-
-            // TODO: register the new account here.
 
             return true;
         }
@@ -374,7 +355,32 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
-                finish();
+                if(!accExist){
+                    AlertDialog.Builder builder1 = new AlertDialog.Builder(LoginActivity.this);
+                    builder1.setMessage("You have enter an incorrect username or password");
+                    builder1.setCancelable(true);
+
+                    builder1.setPositiveButton(
+                            "Sign Up",
+
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+                            startActivity(intent);
+                        }
+                    });
+
+                    builder1.setNegativeButton(
+                            "Try Again ?",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+
+                    AlertDialog alert11 = builder1.create();
+                    alert11.show();
+                }
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
