@@ -2,26 +2,54 @@ package com.example.kiennhan.when2leave.model.activity;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
+
+import com.example.kiennhan.when2leave.model.Account;
+import com.example.kiennhan.when2leave.model.Address;
+import com.example.kiennhan.when2leave.model.Date;
+import com.example.kiennhan.when2leave.model.Meetings;
+import com.example.kiennhan.when2leave.model.Time;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.UUID;
+
+import database.DataBaseHelper;
+
+import static android.provider.Contacts.SettingsColumns.KEY;
 
 public class CreateEventActivity extends AppCompatActivity {
 
 
     EditText mEventName, mEventStreetNum, mEventStreetName, mEventState, mEventCity, mEventZipCode,
             mDefaultStreetName, mDefaultStreetNum, mDefaultCity, mDefaultState, mDefaultZipCode,
-            mDate, mTime, mDescription;
+            mDescription;
+    TextView mTime, mDate;
     Button mCreateEvent;
+    String dateOfMeeting;
+    String timeOfmeeting;
+    DataBaseHelper mDB;
+
+    private static final String KEY = "isLogin";
+    private static final String PREF = "MyPref";
+    private static final String NAME = "username";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +86,7 @@ public class CreateEventActivity extends AppCompatActivity {
                         mcurrentDate.set(Calendar.MONTH, selectedmonth);
                         mcurrentDate.set(Calendar.DAY_OF_MONTH,  selectedday);
                         mDate.setText(sdf.format(mcurrentDate.getTime()));
+                        dateOfMeeting = (sdf.format(mcurrentDate.getTime()));
 
                     }
                 },mYear, mMonth, mDay);
@@ -78,6 +107,7 @@ public class CreateEventActivity extends AppCompatActivity {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         mTime.setText( selectedHour + ":" + selectedMinute);
+                        timeOfmeeting = ( selectedHour + ":" + selectedMinute);
                     }
                 }, hour, minute, true);
                 mTimePicker.setTitle("Select Time of the Event:");
@@ -90,8 +120,35 @@ public class CreateEventActivity extends AppCompatActivity {
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                String userName = pref.getString(KEY, null);
+                mDB = new DataBaseHelper(getApplicationContext());
+                Account account = mDB.getAccountWithUserName(getApplicationContext(), userName);
+
+                String meetingID = UUID.randomUUID().toString() + "_" + userName;
+                String eventName = mEventName.getText().toString();
+                String eventStreetName =  mEventStreetName.getText().toString();
+                String eventStreetNum =  mEventStreetNum.getText().toString();
+                String eventCity =  mEventCity.getText().toString();
+                String eventZipcode =  mEventZipCode.getText().toString();
+                String eventState =  mEventState.getText().toString();
+                Address destination = new Address(meetingID, eventStreetNum, eventStreetName, eventZipcode, eventState, eventCity);
+
+                String eventStreetName2 =  mDefaultStreetName.getText().toString();
+                String eventStreetNum2 =  mDefaultStreetNum.getText().toString();
+                String eventCity2 =  mDefaultCity.getText().toString();
+                String eventZipcode2 =  mDefaultZipCode.getText().toString();
+                String eventState2 =  mDefaultState.getText().toString();
+                Address userLocation = new Address(meetingID, eventStreetNum2, eventStreetName2, eventZipcode2, eventState2, eventCity2);
+
+                Meetings meeting = new Meetings(meetingID, eventName, account,timeOfmeeting, dateOfMeeting, userLocation, destination, mDescription.getText().toString());
+                mDB.addMeeting(getApplicationContext(), account, meeting, userLocation, destination);
+                Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
+                startActivity(intent);
 
             }
         });
     }
+
 }

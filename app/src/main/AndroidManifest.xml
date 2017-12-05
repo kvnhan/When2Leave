@@ -30,7 +30,12 @@
         <activity
             android:name=".WelcomeActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
-        <activity android:name=".CreateEventActivity"/>
+        <activity android:name=".CreateEventActivity"
+            android:parentActivityName=".WelcomeActivity" >
+            <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="com.example.kiennhan.when2leave.model.activity.WelcomeActivity" />
+        </activity>
     </application>
 
 </manifest>

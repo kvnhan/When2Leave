@@ -65,6 +65,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
+    /*
+     * add account to database
+     */
     public void addAccount(Context context, Account account, String hash) {
         mDatabase = new DataBaseHelper(context).getWritableDatabase();
 
@@ -75,6 +78,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /*
+     * add address to database
+     */
     public void addAddress(Context context, Address address, Account account, Boolean isSchedule, Meetings meeting) {
         mDatabase = new DataBaseHelper(context).getWritableDatabase();
         ContentValues values = getAddressValues(address, account, isSchedule, meeting);
@@ -82,6 +88,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         mDatabase.close();
     }
 
+    /*
+     * add meeting to database
+     */
     public void addMeeting(Context context, Account account, Meetings meetings, Address user, Address des) {
         mDatabase = new DataBaseHelper(context).getWritableDatabase();
         ContentValues values = getMeetingValues(meetings, account);
@@ -91,6 +100,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         addAddress(context, des, account, true, meetings);
     }
 
+    /*
+     * get address
+     * //TODO: Make sure to get any addresses
+     */
     public Address getAddress(Context context, String id) {
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
 
@@ -114,6 +127,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return address;
     }
 
+    /*
+    * get account
+    */
     public Account getAccount(Context context, String id) {
         Address address = getAddress(context,id);
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
@@ -136,6 +152,39 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return account;
     }
 
+    public Account getAccountWithUserName(Context context, String username) {
+        mDatabase = new DataBaseHelper(context).getReadableDatabase();
+        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                DbSchema.AccountTable.Cols.USER_NAME + "=?",
+                new String[]{username}
+        );
+
+        if(cursor.getCount() == 0){
+            mDatabase.close();
+            cursor.close();
+            cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                    DbSchema.AccountTable.Cols.EMAIL + "=?",
+                    new String[]{username}
+            );
+        }
+
+        cursor.moveToNext();
+        String firstName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.FIRST_NAME));
+        String lastName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.LAST_NAME));
+        String userName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.USER_NAME));
+        String email = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.EMAIL));
+        String uid = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.UID));
+        Account account = new Account(uid,firstName,lastName,userName,email, "", null, new ArrayList<Meetings>());
+
+        cursor.close();
+        mDatabase.close();
+
+        return account;
+    }
+
+    /*
+    * query database
+    */
     private DataCursorWrapper queryDatabase(String tableName, String whereClause, String[] whereArgs) {
 
         Cursor cursor = mDatabase.query(
@@ -149,6 +198,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         );
         return new DataCursorWrapper(cursor);
     }
+
 
 
     private static ContentValues getAccountValues(Account account, String hashPassword) {

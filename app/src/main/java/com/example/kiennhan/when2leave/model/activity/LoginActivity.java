@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -53,6 +54,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private static final int REQUEST_READ_CONTACTS = 0;
 
     private boolean accExist = true;
+
+    private static final String KEY = "isLogin";
+    private static final String PREF = "MyPref";
+
 
     /**
      * A dummy authentication store containing known user names and passwords.
@@ -330,6 +335,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             Boolean accountExist = mDb.checkAccount(getApplicationContext(), email, password);
             if(accountExist){
                 accExist = true;
+                SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                final SharedPreferences.Editor editor = pref.edit();
+                editor.putString(KEY, email);
+                editor.commit();
                 Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
                 startActivity(intent);
                 return true;

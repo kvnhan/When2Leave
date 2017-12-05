@@ -1,6 +1,7 @@
 package com.example.kiennhan.when2leave.model.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -32,6 +33,9 @@ public class SignUpActivity extends AppCompatActivity {
     EditText mZipCode;
     Button mCreateAccount;
     DataBaseHelper mDB;
+
+    private static final String KEY = "isLogin";
+    private static final String PREF = "MyPref";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +102,10 @@ public class SignUpActivity extends AppCompatActivity {
                 if(!accountExist) {
                     mDB.addAddress(getApplicationContext(), homeAddress, newAccount, false, null);
                     mDB.addAccount(getApplicationContext(), newAccount, hashPassord);
+                    SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                    final SharedPreferences.Editor editor = pref.edit();
+                    editor.putString(KEY, userName);
+                    editor.commit();
                     Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
                     startActivity(intent);
                 }else{

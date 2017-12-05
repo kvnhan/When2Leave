@@ -189,21 +189,23 @@
                     android:layout_height="match_parent"
                     android:orientation="horizontal"></LinearLayout>
 
-                <EditText
+                <TextView
                     android:id="@+id/timePicker"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:hint="@string/Time"
-                    android:inputType="none" />
+                    android:paddingTop="20dp"
+                    android:textSize="18sp" />
 
-                <EditText
+                <TextView
                     android:id="@+id/datePicker"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:hint="@string/Date"
-                    android:inputType="none" />
+                    android:paddingTop="20dp"
+                    android:textSize="18sp" />
 
             </LinearLayout>
 
@@ -257,4 +259,5 @@
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>
+
 </RelativeLayout>
