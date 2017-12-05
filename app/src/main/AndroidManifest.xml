@@ -27,11 +27,17 @@
         </activity>
         <activity
             android:name=".SignUpActivity"
-            android:label="@string/app_name" />
+            android:label="@string/SignUp"
+            android:parentActivityName=".LoginActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.kiennhan.when2leave.model.activity.LoginActivity" />
+        </activity>
         <activity
             android:name=".WelcomeActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity android:name=".CreateEventActivity"
+            android:label="@string/CreateEvent"
             android:parentActivityName=".WelcomeActivity" >
             <meta-data
             android:name="android.support.PARENT_ACTIVITY"
