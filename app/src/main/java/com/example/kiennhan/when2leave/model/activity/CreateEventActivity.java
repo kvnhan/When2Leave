@@ -139,16 +139,119 @@ public class CreateEventActivity extends AppCompatActivity {
                 String eventCity2 =  mDefaultCity.getText().toString();
                 String eventZipcode2 =  mDefaultZipCode.getText().toString();
                 String eventState2 =  mDefaultState.getText().toString();
-                Address userLocation = new Address(meetingID, eventStreetNum2, eventStreetName2, eventZipcode2, eventState2, eventCity2);
 
-                Meetings meeting = new Meetings(meetingID, eventName, account,timeOfmeeting, dateOfMeeting, userLocation, destination, mDescription.getText().toString());
-                mDB.addMeeting(getApplicationContext(), account, meeting, userLocation, destination);
-                Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
-                startActivity(intent);
+                boolean isReady = checkField(eventName, eventStreetNum, eventStreetName, eventCity, eventZipcode,eventState, eventStreetName2, eventStreetNum2,
+                        eventCity2, eventZipcode2, eventState2);
+                if(isReady) {
+                    Address userLocation = new Address(meetingID, eventStreetNum2, eventStreetName2, eventZipcode2, eventState2, eventCity2);
+                    Meetings meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, userLocation, destination, mDescription.getText().toString());
+                    mDB.addMeeting(getApplicationContext(), account, meeting, userLocation, destination);
+                    Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
+                    startActivity(intent);
+                }
 
             }
         });
+    }
+
+    public boolean checkField(String name, String eventStreetnum, String eventStreetname, String eventCity, String eventZipcode, String eventState,
+                              String eventStreetName2, String eventStreetNum2, String eventCity2, String eventZipcode2,
+                              String eventState2){
+        boolean isready = true;
+        if(name.equals("")){
+            View focusView1 = null;
+            mEventName.setError(getString(R.string.error_field_required));
+            focusView1 =  mEventName;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventStreetnum.equals("")){
+            View focusView1 = null;
+            mEventStreetNum.setError(getString(R.string.error_field_required));
+            focusView1 =  mEventStreetNum;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventCity.equals("")){
+            View focusView1 = null;
+            mEventCity.setError(getString(R.string.error_field_required));
+            focusView1 =  mEventCity;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventZipcode.equals("")){
+            View focusView1 = null;
+            mEventZipCode.setError(getString(R.string.error_field_required));
+            focusView1 =  mEventZipCode;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventState.equals("")){
+            View focusView1 = null;
+            mEventState.setError(getString(R.string.error_field_required));
+            focusView1 =  mEventState;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventStreetName2.equals("")){
+            View focusView1 = null;
+            mDefaultStreetName.setError(getString(R.string.error_field_required));
+            focusView1 =  mDefaultStreetName;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventStreetNum2.equals("")){
+            View focusView1 = null;
+            mDefaultStreetNum.setError(getString(R.string.error_field_required));
+            focusView1 =  mDefaultStreetNum;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventCity2.equals("")){
+            View focusView1 = null;
+            mDefaultCity.setError(getString(R.string.error_field_required));
+            focusView1 =  mDefaultCity;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventZipcode2.equals("")){
+            View focusView1 = null;
+            mDefaultZipCode.setError(getString(R.string.error_field_required));
+            focusView1 =  mDefaultZipCode;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventStreetname.equals("")){
+            View focusView1 = null;
+            mEventStreetName.setError(getString(R.string.error_field_required));
+            focusView1 =  mEventStreetName;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(eventState2.equals("")){
+            View focusView1 = null;
+            mDefaultState.setError(getString(R.string.error_field_required));
+            focusView1 =  mDefaultState;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(mTime.getText().equals("")){
+            View focusView1 = null;
+            mTime.setError(getString(R.string.error_field_required));
+            focusView1 =  mTime;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(mDate.getText().equals("")){
+            View focusView1 = null;
+            mDate.setError(getString(R.string.error_field_required));
+            focusView1 =  mDate;
+            focusView1.requestFocus();
+            isready = false;
+        }
+
+        return isready;
     }
 
 }
