@@ -74,6 +74,9 @@ public class SignUpActivity extends AppCompatActivity {
                 String state = mState.getText().toString();
                 String zipCode = mZipCode.getText().toString();
 
+                if(!checkField(firstName,lastName,userName,password,confirmPassword, emailAddress)){
+                    return;
+                }
                 //TODO: Need to check for username/email in the database or server and check if confirm password
 
                 Address homeAddress = new Address("", streetNumber, streetName,zipCode,state,city);
@@ -116,5 +119,53 @@ public class SignUpActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public boolean checkField(String firstname, String lastname, String username, String password, String cpassword, String email){
+        boolean isready = true;
+        if(firstname.equals("")){
+            View focusView1 = null;
+            mFirstName.setError(getString(R.string.error_field_required));
+            focusView1 =  mFirstName;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(lastname.equals("")){
+            View focusView1 = null;
+            mLastName.setError(getString(R.string.error_field_required));
+            focusView1 =  mLastName;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(username.equals("")){
+            View focusView1 = null;
+            mUserName.setError(getString(R.string.error_field_required));
+            focusView1 =  mUserName;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(password.equals("")){
+            View focusView1 = null;
+            mPassword.setError(getString(R.string.error_field_required));
+            focusView1 =  mPassword;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(cpassword.equals("")){
+            View focusView1 = null;
+            mPasswordConfirm.setError(getString(R.string.error_field_required));
+            focusView1 =  mPasswordConfirm;
+            focusView1.requestFocus();
+            isready = false;
+        }
+        if(email.equals("")){
+            View focusView1 = null;
+            mEmailAddress.setError(getString(R.string.error_field_required));
+            focusView1 =  mEmailAddress;
+            focusView1.requestFocus();
+            isready = false;
+        }
+
+        return isready;
     }
 }
