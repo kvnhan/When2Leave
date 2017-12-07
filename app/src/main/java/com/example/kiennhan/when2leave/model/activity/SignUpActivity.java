@@ -37,6 +37,9 @@ public class SignUpActivity extends AppCompatActivity {
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
 
+    private boolean passwordValid = true;
+    private boolean passwordMatch = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,31 +94,37 @@ public class SignUpActivity extends AppCompatActivity {
                     mPassword.setError(getString(R.string.Password));
                     focusView1 = mPassword;
                     focusView1.requestFocus();
-                }else if(!password.equals(confirmPassword)){
-                    View focusView1 = null;
-                    View focusView2 = null;
-                    mPassword.setError(getString(R.string.UsedUsername));
-                    focusView1 = mPassword;
-                    focusView1.requestFocus();
-                    mPasswordConfirm.setError(getString(R.string.UsedUsername));
-                    focusView2 = mPasswordConfirm;
-                    focusView2.requestFocus();
+                    passwordValid = false;
                 }
 
-                if(!accountExist) {
-                    mDB.addAddress(getApplicationContext(), homeAddress, newAccount, false, null);
-                    mDB.addAccount(getApplicationContext(), newAccount, hashPassord);
-                    SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
-                    final SharedPreferences.Editor editor = pref.edit();
-                    editor.putString(KEY, userName);
-                    editor.commit();
-                    Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
-                    startActivity(intent);
-                }else{
-                    View focusView = null;
-                    mUserName.setError(getString(R.string.UsedUsername));
-                    focusView = mUserName;
-                    focusView.requestFocus();
+                if(!password.equals(confirmPassword)){
+                    View focusView1 = null;
+                    View focusView2 = null;
+                    mPassword.setError(getString(R.string.PasswordNotMatch));
+                    focusView1 = mPassword;
+                    focusView1.requestFocus();
+                    mPasswordConfirm.setError(getString(R.string.PasswordNotMatch));
+                    focusView2 = mPasswordConfirm;
+                    focusView2.requestFocus();
+                    passwordMatch = false;
+                }
+
+                if(passwordValid && passwordMatch){
+                    if(!accountExist) {
+                        mDB.addAddress(getApplicationContext(), homeAddress, newAccount, false, null);
+                        mDB.addAccount(getApplicationContext(), newAccount, hashPassord);
+                        SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                        final SharedPreferences.Editor editor = pref.edit();
+                        editor.putString(KEY, userName);
+                        editor.commit();
+                        Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
+                        startActivity(intent);
+                    }else{
+                        View focusView = null;
+                        mUserName.setError(getString(R.string.UsedUsername));
+                        focusView = mUserName;
+                        focusView.requestFocus();
+                    }
                 }
             }
         });
