@@ -32,7 +32,7 @@ public class EventListFragment extends Fragment {
     private static final String PREF = "MyPref";
     private static final String NAME = "username";
 
-    private RecyclerView mCrimeRecyclerView;
+    private RecyclerView mRecyclerView;
     private EventAdapter mAdapter;
     private DataBaseHelper mDB;
 
@@ -42,16 +42,17 @@ public class EventListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_event, container, false);
+        View view = inflater.inflate(R.layout.event_recycler_view, container, false);
 
-        mCrimeRecyclerView = (RecyclerView) view
-                .findViewById(R.id.event_recycler_view);
-        mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.e_recycler_view);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
 
         updateUI();
 
@@ -78,20 +79,15 @@ public class EventListFragment extends Fragment {
         String userName = pref.getString(KEY, null);
         String uid = mDB.getUUID(userName, getContext());
 
-        // ArrayList<Meetings> meetingsList = mDB.getMeetings();
-        // TODO: Get Meetings from Database
-/*
-        CrimeLab crimeLab = CrimeLab.get(getActivity());
-        List<Crime> crimes = crimeLab.getCrimes();
+        ArrayList<Meetings> meetingsList = mDB.getMeetings(uid, getContext());
 
         if (mAdapter == null) {
-            mAdapter = new CrimeAdapter(crimes);
-            mCrimeRecyclerView.setAdapter(mAdapter);
+            mAdapter = new EventAdapter(meetingsList);
+            mRecyclerView.setAdapter(mAdapter);
         } else {
-            mAdapter.setCrimes(crimes);
+            mAdapter.setMeetings(meetingsList);
             mAdapter.notifyDataSetChanged();
         }
-*/
     }
 
     private class EventHolder extends RecyclerView.ViewHolder
@@ -150,7 +146,7 @@ public class EventListFragment extends Fragment {
             return mMeetings.size();
         }
 
-        public void setCrimes(List<Meetings> m) {
+        public void setMeetings(List<Meetings> m) {
             mMeetings = m;
         }
     }

@@ -61,7 +61,8 @@ public class WelcomeActivity extends AppCompatActivity {
         mViewEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                
+                Intent intent = new Intent(WelcomeActivity.this, EventListActivity.class);
+                startActivity(intent);
             }
         });
     }

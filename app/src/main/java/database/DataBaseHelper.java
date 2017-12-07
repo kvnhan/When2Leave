@@ -100,8 +100,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         ContentValues values = getMeetingValues(meetings, account);
         long i = mDatabase.insert(DbSchema.MeetingTable.NAME, null, values);
         mDatabase.close();
-        addAddress(context, user, account, true, meetings);
         addAddress(context, des, account, true, meetings);
+        addAddress(context, user, account, true, meetings);
     }
 
     /*
@@ -307,7 +307,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 DbSchema.AccountTable.Cols.USER_NAME + "=?",
                 new String[]{username}
         );
-
+        cursor.moveToNext();
         String uid = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.UID));
         mDatabase.close();
         cursor.close();
@@ -318,42 +318,51 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public String getMeetingsID(String uid, Context context){
         String eventID = "";
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
-        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
+        DataCursorWrapper cursor = queryDatabase(DbSchema.MeetingTable.NAME,
                 DbSchema.MeetingTable.Cols.UID + "=?",
                 new String[]{uid}
         );
 
-        if(cursor.getCount() > 0){
-            eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
-        }
+
+        cursor.moveToFirst();
+        eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
+
 
         return eventID;
     }
 
     public ArrayList<Meetings> getMeetings(String uid, Context context){
         String eventID = getMeetingsID(uid, context);
-        //TODO: Get destination address with this eventID
         ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
-        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
+        Cursor c = mDatabase.query(DbSchema.AddressTable.NAME, null, DbSchema.AddressTable.Cols.ID + "=?"
+                , new String[]{eventID}, null, null, null);
+
+        c.moveToFirst();
+        String eventStreet = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NAME));
+        String eventStrNum = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NUMBER));
+        String eventState = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STATE));
+        String eventCity = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.CITY));
+        String eventZipCode = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.ZIPCODE));
+        c.close();
+
+        Address address = new Address(eventID, eventStrNum, eventStreet, eventZipCode, eventState,eventCity);
+
+        DataCursorWrapper cursor = queryDatabase(DbSchema.MeetingTable.NAME,
                 DbSchema.MeetingTable.Cols.UID + "=?",
                 new String[]{uid}
         );
 
+        System.out.println(cursor.getCount());
         try {
-
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 String eventname = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TITLE));
-
-                //String eventStreet = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.));
-                String eventStrNum = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.NAME));
-                String eventState = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.NAME));
-                String eventCity = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.NAME));
-                String eventZipCode = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.NAME));
-
                 String eventTime = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TIME_ID));
                 String eventDate = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DATE_ID));
+                String description = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESCRIPTION));
+                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, address, description);
+                meetingsList.add(newMeeting);
                 cursor.moveToNext();
             }
         } finally {

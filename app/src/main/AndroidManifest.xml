@@ -43,6 +43,10 @@
             android:name="android.support.PARENT_ACTIVITY"
             android:value="com.example.kiennhan.when2leave.model.activity.WelcomeActivity" />
         </activity>
+        <activity
+            android:name=".EventListActivity"
+            android:label="@string/viewEvent">
+        </activity>
     </application>
 
 </manifest>
