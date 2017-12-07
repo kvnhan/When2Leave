@@ -3,18 +3,12 @@ package com.example.kiennhan.when2leave.model.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.kiennhan.when2leave.model.Meetings;
@@ -31,6 +25,12 @@ public class EventListFragment extends Fragment {
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String NAME = "username";
+
+    private static final String EVENTNAME = "eventname";
+    private static final String LOCATION = "location";
+    private static final String TIME = "time";
+    private static final String DATE = "date";
+    private static final String DESC = "description";
 
     private RecyclerView mRecyclerView;
     private EventAdapter mAdapter;
@@ -90,43 +90,61 @@ public class EventListFragment extends Fragment {
         }
     }
 
-    private class EventHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener {
 
-        private Meetings mMeeting;
-
-        private TextView mTitleTextView;
-        private TextView mDateTextView;
-        private TextView mTimeTextView;
-
-        public EventHolder(LayoutInflater inflater, ViewGroup parent) {
-            super(inflater.inflate(R.layout.list_item_event, parent, false));
-            itemView.setOnClickListener(this);
-
-            mTitleTextView = (TextView) itemView.findViewById(R.id.fragment_event_name);
-            mDateTextView = (TextView) itemView.findViewById(R.id.fragment_event_date);
-            mTimeTextView = (TextView) itemView.findViewById(R.id.fragment_event_time);
-        }
-
-        public void bind(Meetings meeting) {
-            mMeeting = meeting;
-            mTitleTextView.setText(mMeeting.getTitle());
-            mDateTextView.setText(mMeeting.getDateOfMeeting());
-            mTimeTextView.setText(mMeeting.getTimeOfM0eeting());
-        }
-
-        @Override
-        public void onClick(View view) {
-            //TODO: Start intent
-        }
-    }
-
-    private class EventAdapter extends RecyclerView.Adapter<EventHolder> {
+    public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventHolder> {
 
         private List<Meetings> mMeetings;
 
         public EventAdapter(List<Meetings> meetings) {
             mMeetings = meetings;
+        }
+
+        public class EventHolder extends RecyclerView.ViewHolder
+                implements View.OnClickListener {
+
+            private Meetings mMeeting;
+
+            private TextView mTitleTextView;
+            private TextView mDateTextView;
+            private TextView mTimeTextView;
+
+            public EventHolder(LayoutInflater inflater, ViewGroup parent) {
+                super(inflater.inflate(R.layout.list_item_event, parent, false));
+                itemView.setOnClickListener(this);
+
+                mTitleTextView = (TextView) itemView.findViewById(R.id.fragment_event_name);
+                mDateTextView = (TextView) itemView.findViewById(R.id.fragment_event_date);
+                mTimeTextView = (TextView) itemView.findViewById(R.id.fragment_event_time);
+            }
+
+            public void bind(Meetings meeting) {
+                mMeeting = meeting;
+                mTitleTextView.setText(mMeeting.getTitle());
+                mDateTextView.setText(mMeeting.getDateOfMeeting());
+                mTimeTextView.setText(mMeeting.getTimeOfM0eeting());
+            }
+
+
+
+            @Override
+            public void onClick(View view) {
+                //TODO: Start intent
+                Intent intent = new Intent(getActivity(), ViewEventActivity.class);
+                int pos = getAdapterPosition();
+                Meetings meeting = mMeetings.get(pos);
+                String name = meeting.getTitle();
+                String location = meeting.getDestination().getStreetNumber() + " " + meeting.getDestination().getStreetName() + " " +
+                        meeting.getDestination().getCity() + " " + meeting.getDestination().getState() + " " + meeting.getDestination().getZipCode();
+                String time = meeting.getTimeOfM0eeting();
+                String date = meeting.getDateOfMeeting();
+                String desc = meeting.getDescription();
+                intent.putExtra(EVENTNAME, name);
+                intent.putExtra(LOCATION, location);
+                intent.putExtra(TIME, time);
+                intent.putExtra(DATE, date);
+                intent.putExtra(DESC, desc);
+                startActivity(intent);
+            }
         }
 
         @Override

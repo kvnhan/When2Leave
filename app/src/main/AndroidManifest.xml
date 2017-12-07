@@ -17,8 +17,7 @@
         <activity
             android:name=".LoginActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
-            >
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,24 +27,35 @@
         <activity
             android:name=".SignUpActivity"
             android:label="@string/SignUp"
-            android:parentActivityName=".LoginActivity" >
+            android:parentActivityName=".LoginActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.kiennhan.when2leave.model.activity.LoginActivity" />
         </activity>
         <activity
             android:name=".WelcomeActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
-        <activity android:name=".CreateEventActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".CreateEventActivity"
             android:label="@string/CreateEvent"
-            android:parentActivityName=".WelcomeActivity" >
+            android:parentActivityName=".WelcomeActivity">
             <meta-data
-            android:name="android.support.PARENT_ACTIVITY"
-            android:value="com.example.kiennhan.when2leave.model.activity.WelcomeActivity" />
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.kiennhan.when2leave.model.activity.WelcomeActivity" />
         </activity>
         <activity
             android:name=".EventListActivity"
             android:label="@string/viewEvent">
+            android:parentActivityName=".WelcomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.kiennhan.when2leave.model.activity.WelcomeActivity" />
+        </activity>
+        <activity android:name=".ViewEventActivity"
+            android:parentActivityName=".EventListActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.kiennhan.when2leave.model.activity.WelcomeActivity" />
         </activity>
     </application>
 
