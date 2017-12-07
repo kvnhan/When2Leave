@@ -6,6 +6,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import com.example.kiennhan.when2leave.model.Account;
 import com.example.kiennhan.when2leave.model.Address;
@@ -230,12 +232,13 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     private ContentValues getMeetingValues(Meetings meetings, Account account) {
         ContentValues values = new ContentValues();
-        values.put(DbSchema.MeetingTable.Cols.DATE_ID, meetings.getId());
+        values.put(DbSchema.MeetingTable.Cols.ID, meetings.getId());
+        values.put(DbSchema.MeetingTable.Cols.DATE_ID, meetings.getDateOfMeeting());
         values.put(DbSchema.MeetingTable.Cols.DESCRIPTION, meetings.getDescription());
         values.put(DbSchema.MeetingTable.Cols.DESTINATION_ID, meetings.getId());
         values.put(DbSchema.MeetingTable.Cols.TITLE, meetings.getTitle());
         values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, meetings.getId());
-        values.put(DbSchema.MeetingTable.Cols.TIME_ID, meetings.getId());
+        values.put(DbSchema.MeetingTable.Cols.TIME_ID, meetings.getTimeOfM0eeting());
         values.put(DbSchema.MeetingTable.Cols.UID, account.getUid());
         return values;
     }
@@ -298,7 +301,68 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return false;
     }
 
+    public String getUUID(String username, Context context){
+        mDatabase = new DataBaseHelper(context).getReadableDatabase();
+        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                DbSchema.AccountTable.Cols.USER_NAME + "=?",
+                new String[]{username}
+        );
 
+        String uid = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.UID));
+        mDatabase.close();
+        cursor.close();
 
+        return uid;
+    }
+
+    public String getMeetingsID(String uid, Context context){
+        String eventID = "";
+        mDatabase = new DataBaseHelper(context).getReadableDatabase();
+        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                DbSchema.MeetingTable.Cols.UID + "=?",
+                new String[]{uid}
+        );
+
+        if(cursor.getCount() > 0){
+            eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
+        }
+
+        return eventID;
+    }
+
+    public ArrayList<Meetings> getMeetings(String uid, Context context){
+        String eventID = getMeetingsID(uid, context);
+        //TODO: Get destination address with this eventID
+        ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
+        mDatabase = new DataBaseHelper(context).getReadableDatabase();
+        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                DbSchema.MeetingTable.Cols.UID + "=?",
+                new String[]{uid}
+        );
+
+        try {
+
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                String eventname = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TITLE));
+
+                //String eventStreet = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.));
+                String eventStrNum = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.NAME));
+                String eventState = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.NAME));
+                String eventCity = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.NAME));
+                String eventZipCode = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.NAME));
+
+                String eventTime = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TIME_ID));
+                String eventDate = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DATE_ID));
+                cursor.moveToNext();
+            }
+        } finally {
+            cursor.close();
+        }
+
+        mDatabase.close();
+
+        return meetingsList;
+    }
 
 }
