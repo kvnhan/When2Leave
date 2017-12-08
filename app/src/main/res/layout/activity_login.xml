@@ -98,5 +98,16 @@
                 android:textStyle="bold" />
 
         </LinearLayout>
+
     </ScrollView>
+
+    <TextView
+        android:id="@+id/register"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/login_form"
+        android:text="@string/Register"
+        android:textColor="@android:color/holo_blue_bright" />
 </RelativeLayout>
