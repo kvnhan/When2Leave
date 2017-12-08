@@ -20,44 +20,29 @@
         android:textSize="30sp"
         android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/createEvent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="@string/createEvent" />
+    <android.support.v4.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/my_toolbar"
+        android:fitsSystemWindows="false">
 
-    <Button
-        android:id="@+id/editEvent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/createEvent"
-        android:layout_alignLeft="@+id/createEvent"
-        android:layout_alignRight="@+id/createEvent"
-        android:layout_alignStart="@+id/createEvent"
-        android:layout_below="@+id/createEvent"
-        android:layout_marginTop="28dp"
-        android:text="@string/editEvent" />
+        <ListView
+            android:id="@+id/navList"
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="left|start"
+            android:background="#ffeeeeee"
+            android:fitsSystemWindows="true" />
 
-    <Button
-        android:id="@+id/ViewEvent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/editEvent"
-        android:layout_alignLeft="@+id/editEvent"
-        android:layout_alignRight="@+id/editEvent"
-        android:layout_alignStart="@+id/editEvent"
-        android:layout_below="@+id/editEvent"
-        android:layout_marginTop="29dp"
-        android:text="@string/viewEvent" />
+    </android.support.v4.widget.DrawerLayout>
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/my_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:background="@color/colorPrimary"
-        android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
 
 </RelativeLayout>
+

@@ -171,7 +171,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                     new String[]{username}
             );
         }
-
         cursor.moveToNext();
         String firstName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.FIRST_NAME));
         String lastName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.LAST_NAME));
@@ -373,5 +372,4 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         return meetingsList;
     }
-
 }
