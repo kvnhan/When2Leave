@@ -90,16 +90,19 @@ public class EventListFragment extends Fragment {
         }
     }
 
+    public EventAdapter getmAdapter(ArrayList<Meetings> lom){
+        return new EventAdapter(lom);
+    }
 
-    public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventHolder> {
+    class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventHolder> {
 
         private List<Meetings> mMeetings;
 
-        public EventAdapter(List<Meetings> meetings) {
+        EventAdapter(List<Meetings> meetings) {
             mMeetings = meetings;
         }
 
-        public class EventHolder extends RecyclerView.ViewHolder
+        class EventHolder extends RecyclerView.ViewHolder
                 implements View.OnClickListener {
 
             private Meetings mMeeting;
@@ -108,7 +111,7 @@ public class EventListFragment extends Fragment {
             private TextView mDateTextView;
             private TextView mTimeTextView;
 
-            public EventHolder(LayoutInflater inflater, ViewGroup parent) {
+            EventHolder(LayoutInflater inflater, ViewGroup parent) {
                 super(inflater.inflate(R.layout.list_item_event, parent, false));
                 itemView.setOnClickListener(this);
 

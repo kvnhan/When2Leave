@@ -8,6 +8,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,6 +21,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.kiennhan.when2leave.model.Meetings;
+
+import java.util.ArrayList;
+
+import database.DataBaseHelper;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -32,9 +40,16 @@ public class WelcomeActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private String mActivityTitle;
 
+    private RecyclerView mRecyclerView;
+    private EventListFragment.EventAdapter mEventAdapter;
+    private EventListFragment eventFragment;
+
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private boolean onWelcome = false;
+
+    DataBaseHelper mDB;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +70,11 @@ public class WelcomeActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.daily_event);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
 
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
@@ -80,6 +100,7 @@ public class WelcomeActivity extends AppCompatActivity {
         String text = String.format(res.getString(R.string.Welcome), userName);
         mWelcome = (TextView)findViewById(R.id.welcome);
         mWelcome.setText(text);
+        updateUI();
 
     }
 
@@ -163,4 +184,27 @@ public class WelcomeActivity extends AppCompatActivity {
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
+    private void updateUI() {
+        mDB = new DataBaseHelper(getApplicationContext());
+        SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+        String userName = pref.getString(KEY, null);
+        String uid = mDB.getUUID(userName, getApplicationContext());
+
+        ArrayList<Meetings> meetingsList = mDB.getMeetings(uid, getApplicationContext());
+
+        if (mEventAdapter == null) {
+            eventFragment = new EventListFragment();
+            mEventAdapter = eventFragment.getmAdapter(meetingsList);
+            mRecyclerView.setAdapter(mEventAdapter);
+        } else {
+            mEventAdapter.setMeetings(meetingsList);
+            mEventAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
 }
