@@ -322,9 +322,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 new String[]{uid}
         );
 
-
-        cursor.moveToFirst();
-        eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
+        if(cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
+        }
 
 
         return eventID;
@@ -337,12 +338,15 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         Cursor c = mDatabase.query(DbSchema.AddressTable.NAME, null, DbSchema.AddressTable.Cols.ID + "=?"
                 , new String[]{eventID}, null, null, null);
 
-        c.moveToFirst();
-        String eventStreet = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NAME));
-        String eventStrNum = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NUMBER));
-        String eventState = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STATE));
-        String eventCity = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.CITY));
-        String eventZipCode = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.ZIPCODE));
+        String eventStreet = "", eventStrNum ="", eventState = "", eventCity = "", eventZipCode = "";
+        if(c.getCount() > 0) {
+            c.moveToFirst();
+            eventStreet = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NAME));
+            eventStrNum = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NUMBER));
+            eventState = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STATE));
+            eventCity = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.CITY));
+            eventZipCode = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.ZIPCODE));
+        }
         c.close();
 
         Address address = new Address(eventID, eventStrNum, eventStreet, eventZipCode, eventState,eventCity);

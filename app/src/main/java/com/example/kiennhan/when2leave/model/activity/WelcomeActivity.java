@@ -23,6 +23,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kiennhan.when2leave.model.Meetings;
+import com.example.kiennhan.when2leave.model.OnItemClickListener;
+import com.example.kiennhan.when2leave.model.adapter.DailyEventAdapter;
 
 import java.util.ArrayList;
 
@@ -39,16 +41,22 @@ public class WelcomeActivity extends AppCompatActivity {
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private String mActivityTitle;
+    ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
 
     private RecyclerView mRecyclerView;
-    private EventListFragment.EventAdapter mEventAdapter;
-    private EventListFragment eventFragment;
+    private DailyEventAdapter mEventAdapter;
 
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private boolean onWelcome = false;
 
     DataBaseHelper mDB;
+
+    private static final String EVENTNAME = "eventname";
+    private static final String LOCATION = "location";
+    private static final String TIME = "time";
+    private static final String DATE = "date";
+    private static final String DESC = "description";
 
 
     @Override
@@ -72,9 +80,6 @@ public class WelcomeActivity extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.daily_event);
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-        mRecyclerView.setLayoutManager(mLayoutManager);
-
 
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
@@ -101,6 +106,7 @@ public class WelcomeActivity extends AppCompatActivity {
         mWelcome = (TextView)findViewById(R.id.welcome);
         mWelcome.setText(text);
         updateUI();
+        clickItem();
 
     }
 
@@ -156,6 +162,8 @@ public class WelcomeActivity extends AppCompatActivity {
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 getSupportActionBar().setTitle("Navigation");
+                mDrawerList.bringToFront();
+                mDrawerLayout.requestLayout();
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
@@ -190,15 +198,20 @@ public class WelcomeActivity extends AppCompatActivity {
         String userName = pref.getString(KEY, null);
         String uid = mDB.getUUID(userName, getApplicationContext());
 
-        ArrayList<Meetings> meetingsList = mDB.getMeetings(uid, getApplicationContext());
+        meetingsList = mDB.getMeetings(uid, getApplicationContext());
+        try {
+            if (mEventAdapter == null) {
+                mEventAdapter = new DailyEventAdapter(getApplication(), meetingsList);
+                mRecyclerView.setAdapter(mEventAdapter);
+            } else {
+                mEventAdapter.setMeetings(meetingsList);
+                mEventAdapter.notifyDataSetChanged();
+            }
 
-        if (mEventAdapter == null) {
-            eventFragment = new EventListFragment();
-            mEventAdapter = eventFragment.getmAdapter(meetingsList);
-            mRecyclerView.setAdapter(mEventAdapter);
-        } else {
-            mEventAdapter.setMeetings(meetingsList);
-            mEventAdapter.notifyDataSetChanged();
+            LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+            mRecyclerView.setLayoutManager(mLayoutManager);
+        }catch (Exception i){
+            i.printStackTrace();
         }
     }
 
@@ -206,5 +219,27 @@ public class WelcomeActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         updateUI();
+    }
+
+    public void clickItem(){
+        mEventAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Intent intent = new Intent(WelcomeActivity.this, ViewEventActivity.class);
+                Meetings meeting =meetingsList.get(position);
+                String name = meeting.getTitle();
+                String location = meeting.getDestination().getStreetNumber() + " " + meeting.getDestination().getStreetName() + " " +
+                        meeting.getDestination().getCity() + " " + meeting.getDestination().getState() + " " + meeting.getDestination().getZipCode();
+                String time = meeting.getTimeOfM0eeting();
+                String date = meeting.getDateOfMeeting();
+                String desc = meeting.getDescription();
+                intent.putExtra(EVENTNAME, name);
+                intent.putExtra(LOCATION, location);
+                intent.putExtra(TIME, time);
+                intent.putExtra(DATE, date);
+                intent.putExtra(DESC, desc);
+                startActivity(intent);
+            }
+        });
     }
 }
