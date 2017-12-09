@@ -20,6 +20,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+
 public class WelcomeActivity extends AppCompatActivity {
 
     TextView mWelcome;
@@ -35,6 +37,8 @@ public class WelcomeActivity extends AppCompatActivity {
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private boolean onWelcome = false;
+
+    private FusedLocationProviderClient mFusedLocationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
