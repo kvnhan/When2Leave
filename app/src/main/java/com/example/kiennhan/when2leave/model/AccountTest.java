@@ -1,15 +1,12 @@
 package com.example.kiennhan.when2leave.model;
 
-
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.util.ArrayList;
-
 /**
- * Created by Kien Nhan on 11/27/2017.
+ * Created by Kien Nhan on 12/9/2017.
  */
 
-public class Account {
+public class AccountTest {
     private static int workload = 12;
     public String uid;
     public String firstName;
@@ -17,18 +14,10 @@ public class Account {
     public String userName;
     public String email;
     public String password;
-    public Address streetAddress;
+    public AddressTest streetAddress;
 
-    public Account(String uid, String firstName, String lastName, String userName, String email, String password, Address streetAddress) {
-        this.uid = uid;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.userName = userName;
-        this.email = email;
-        this.password = password;
-        this.streetAddress = streetAddress;
-    }
-    
+    public AccountTest(){}
+
     public String getUid() {
         return uid;
     }
@@ -77,11 +66,11 @@ public class Account {
         this.password = password;
     }
 
-    public Address getStreetAddress() {
+    public AddressTest getStreetAddress() {
         return streetAddress;
     }
 
-    public void setStreetAddress(Address streetAddress) {
+    public void setStreetAddress(AddressTest streetAddress) {
         this.streetAddress = streetAddress;
     }
 
