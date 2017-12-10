@@ -1,9 +1,13 @@
 package com.example.kiennhan.when2leave.model.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.location.Location;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +25,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -50,8 +56,8 @@ public class WelcomeActivity extends AppCompatActivity {
         myToolbar.setTitle("");
         myToolbar.setSubtitle("");
 
-        mDrawerList = (ListView)findViewById(R.id.navList);
-        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.navList);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mActivityTitle = getTitle().toString();
 
         addDrawerItems();
@@ -60,11 +66,11 @@ public class WelcomeActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
-                    if(!onWelcome) {
+                    if (!onWelcome) {
                         Intent intent = new Intent(WelcomeActivity.this, WelcomeActivity.class);
                         startActivity(intent);
                     }
@@ -82,9 +88,36 @@ public class WelcomeActivity extends AppCompatActivity {
         String userName = pref.getString(KEY, null);
         Resources res = getResources();
         String text = String.format(res.getString(R.string.Welcome), userName);
-        mWelcome = (TextView)findViewById(R.id.welcome);
+        mWelcome = (TextView) findViewById(R.id.welcome);
         mWelcome.setText(text);
 
+        //check for permissions
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    0);
+        }
+        else {
+            mFusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            if (location != null) {
+                                Toast toast = Toast.makeText(getApplicationContext(), "location got", Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        }
+                    });
+        }
     }
 
     @Override
