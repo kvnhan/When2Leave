@@ -61,5 +61,6 @@
         <item>Create Event</item>
         <item>View Event</item>
     </string-array>
+    <string name="title_activity_maps">Map</string>
 
 </resources>
