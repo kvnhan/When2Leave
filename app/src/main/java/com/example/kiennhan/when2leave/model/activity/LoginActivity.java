@@ -39,7 +39,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.kiennhan.when2leave.model.Account;
+import com.example.kiennhan.when2leave.model.AccountTest;
+import com.example.kiennhan.when2leave.model.Address;
+import com.example.kiennhan.when2leave.model.Password;
 import com.example.kiennhan.when2leave.model.activity.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import database.DataBaseHelper;
 
@@ -80,6 +88,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
     private DataBaseHelper mDb;
+    private boolean accountExist = true;
+    private DatabaseReference myRef;
+    private static final String ACCOUNT = "account";
+    private static final String PASSWORD_SAFE = "passwordsafe";
+    private static final String PW = "peace";
+    private Boolean listenerCompleted = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +103,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
+
+        myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -345,19 +362,38 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             // Local Database Account Authentication
             // Store values at the time of the login attempt.
-            String email = mEmailView.getText().toString();
-            String password = mPasswordView.getText().toString();
-            Boolean accountExist = mDb.checkAccount(getApplicationContext(), email, password);
-            if(accountExist) {
-                accExist = true;
-                SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
-                final SharedPreferences.Editor editor = pref.edit();
-                editor.putString(KEY, email);
-                editor.commit();
-                Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
-                startActivity(intent);
-                return true;
-            }
+            final String email = mEmailView.getText().toString();
+            final String password = mPasswordView.getText().toString();
+            final Password hp= new Password();
+            myRef.addListenerForSingleValueEvent((new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Iterable<DataSnapshot> children = dataSnapshot.getChildren();
+                    for (DataSnapshot child : children) {
+                        AccountTest acoount = child.getValue(AccountTest.class);
+                        if (acoount.getUserName().equals(email) || acoount.getEmail().equals(email)) {
+                            SharedPreferences pref = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
+                            String hashP = pref.getString(PASSWORD_SAFE, null);
+                            if(hp.checkPassword(password,hashP)) {
+                                listenerCompleted = true;
+                                accountExist = true;
+                                break;
+                            }
+                        }else{
+                            listenerCompleted = true;
+                            accountExist = false;
+                        }
+                    }
+                    checkListenerStatus();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+
+            }));
+            //Boolean accountExist = mDb.checkAccount(getApplicationContext(), email, password);
 
             return true;
         }
@@ -366,9 +402,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
             showProgress(false);
-
+/*
             if (success) {
-                if(!accExist){
+                if(!accountExist){
                     AlertDialog.Builder builder1 = new AlertDialog.Builder(LoginActivity.this);
                     builder1.setMessage("You have enter an incorrect username or password");
                     builder1.setCancelable(true);
@@ -376,12 +412,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     builder1.setPositiveButton(
                             "Sign Up",
 
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
-                            startActivity(intent);
-                        }
-                    });
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+                                    startActivity(intent);
+                                }
+                            });
 
                     builder1.setNegativeButton(
                             "Try Again ?",
@@ -398,12 +434,49 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }
+            */
         }
 
         @Override
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+
+
+    }
+
+    private void checkListenerStatus() {
+        if (listenerCompleted) {
+            if(accountExist){
+                Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
+                startActivity(intent);
+            }else{
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(LoginActivity.this);
+                builder1.setMessage("You have enter an incorrect username or password");
+                builder1.setCancelable(true);
+
+                builder1.setPositiveButton(
+                        "Sign Up",
+
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+
+                builder1.setNegativeButton(
+                        "Try Again ?",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+                AlertDialog alert11 = builder1.create();
+                alert11.show();
+            }
         }
     }
 }

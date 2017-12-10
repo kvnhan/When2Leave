@@ -66,6 +66,10 @@ public class SignUpActivity extends AppCompatActivity {
     private static final String FIRST = "first";
     private static final String FIRSTRUN = "firstrun";
     private static final String ACCOUNT = "account";
+    private static final String UID = "uid";
+    private static final String ACC_UID = "accuid";
+    private static final String PASSWORD_SAFE = "passwordsafe";
+    private static final String PW = "peace";
 
     private boolean passwordValid = true;
     private boolean passwordMatch = true;
@@ -154,7 +158,7 @@ public class SignUpActivity extends AppCompatActivity {
                     final SharedPreferences.Editor editor = mypref.edit();
                     editor.putString(KEY, userName);
                     editor.commit();
-                    saveUserInfo(newAccount);
+                    saveUserInfo(newAccount, hashPassord);
                     Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
                     startActivity(intent);
                 }
@@ -212,8 +216,17 @@ public class SignUpActivity extends AppCompatActivity {
         return isready;
     }
 
-    private boolean saveUserInfo(Account account){
+    private boolean saveUserInfo(Account account, String Hashpw){
+        SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
+        final SharedPreferences.Editor editor = mypref.edit();
+        editor.putString(ACC_UID, account.getUid());
+        editor.commit();
+        SharedPreferences pw = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
+        final SharedPreferences.Editor edi = pw.edit();
+        edi.putString(PASSWORD_SAFE, Hashpw);
+        edi.commit();
         account.setUid("");
+        account.setPassword("");
         myRef.child(account.getUid()).push().setValue(account);
         return true;
     }
@@ -327,7 +340,7 @@ public class SignUpActivity extends AppCompatActivity {
                     final SharedPreferences.Editor editor = pref.edit();
                     editor.putString(KEY, username);
                     editor.commit();
-                    saveUserInfo(acc);
+                    saveUserInfo(acc, hashPw);
                     Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
                     startActivity(intent);
                 }
