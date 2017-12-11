@@ -39,48 +39,42 @@
                 android:id="@+id/welcome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_above="@+id/label"
+                android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
-                android:layout_marginBottom="47dp"
+                android:layout_centerInParent="false"
                 android:gravity="center"
+                android:paddingBottom="40dp"
+                android:paddingTop="75dp"
                 android:text="@string/Welcome"
                 android:textColor="@android:color/background_light"
                 android:textSize="30sp"
                 android:textStyle="bold" />
 
-            <RelativeLayout
-                android:id="@+id/label"
+            <TextView
+                android:id="@+id/textView6"
                 android:layout_width="250dp"
                 android:layout_height="wrap_content"
-                android:layout_above="@+id/container"
-                android:layout_centerInParent="true"
-                android:background="@android:color/darker_gray">
-
-                <TextView
-                    android:id="@+id/textView6"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="false"
-                    android:layout_centerVertical="false"
-                    android:gravity="center"
-                    android:text="Weekly Events"
-                    android:textSize="18sp" />
-
-            </RelativeLayout>
+                android:layout_below="@+id/welcome"
+                android:layout_centerHorizontal="true"
+                android:background="@color/place_autocomplete_search_hint"
+                android:gravity="center"
+                android:text="Weekly Events"
+                android:textSize="18sp" />
 
             <RelativeLayout
                 android:id="@+id/container"
                 android:layout_width="250dp"
                 android:layout_height="300dp"
-                android:layout_alignLeft="@+id/label"
-                android:layout_alignParentBottom="true"
-                android:layout_alignStart="@+id/label"
+                android:layout_alignParentBottom="false"
+                android:layout_below="@+id/textView6"
+                android:layout_centerHorizontal="true"
                 android:layout_marginBottom="53dp">
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/daily_event"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
                     android:layout_centerInParent="false"
                     android:background="@android:color/background_light">
 

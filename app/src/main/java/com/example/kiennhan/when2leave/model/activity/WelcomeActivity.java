@@ -1,5 +1,8 @@
 package com.example.kiennhan.when2leave.model.activity;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -25,6 +28,7 @@ import android.widget.Toast;
 import com.example.kiennhan.when2leave.model.Meetings;
 import com.example.kiennhan.when2leave.model.OnItemClickListener;
 import com.example.kiennhan.when2leave.model.adapter.DailyEventAdapter;
+import com.example.kiennhan.when2leave.model.service.When2Leave;
 
 import java.util.ArrayList;
 
@@ -68,6 +72,13 @@ public class WelcomeActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         myToolbar.setTitle("");
         myToolbar.setSubtitle("");
+
+        JobScheduler jobScheduler = (JobScheduler) getApplicationContext().getSystemService(getApplicationContext().JOB_SCHEDULER_SERVICE);
+        ComponentName componentName = new ComponentName(getApplicationContext(), When2Leave.class);
+        JobInfo jobInfo = new JobInfo.Builder(1, componentName)
+                .setPeriodic(5000)
+                .build();
+        jobScheduler.schedule(jobInfo);
 
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
@@ -128,11 +139,6 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-            if(id == R.id.Settings) {
-                Toast.makeText(getApplicationContext(), "This will show a Setting Layout", Toast.LENGTH_LONG).show();
-                return true;
-            }
-
             if(id == R.id.signOut) {
                 Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
                 startActivity(intent);
@@ -198,7 +204,7 @@ public class WelcomeActivity extends AppCompatActivity {
         String userName = pref.getString(KEY, null);
         String uid = mDB.getUUID(userName, getApplicationContext());
 
-        meetingsList = mDB.getMeetings(uid, getApplicationContext());
+        meetingsList = mDB.getWeeklyMeetings(uid, getApplicationContext());
         try {
             if (mEventAdapter == null) {
                 mEventAdapter = new DailyEventAdapter(getApplication(), meetingsList);

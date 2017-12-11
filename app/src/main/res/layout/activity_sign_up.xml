@@ -80,7 +80,7 @@
                 android:layout_weight="1"
                 android:ems="10"
                 android:hint="@string/EmailAddress"
-                android:inputType="textPersonName"
+                android:inputType="textEmailAddress"
                 android:paddingTop="40dp" />
 
             <EditText
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:hint="@string/PhoneNumber"
-                android:inputType="textPersonName"
+                android:inputType="phone"
                 android:paddingTop="40dp" />
 
             <RelativeLayout

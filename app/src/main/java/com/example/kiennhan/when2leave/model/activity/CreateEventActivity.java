@@ -115,13 +115,17 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
 
                 DatePickerDialog mDatePicker=new DatePickerDialog(CreateEventActivity.this, new DatePickerDialog.OnDateSetListener() {
                     public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                        String myFormat = "dd/MMM/yyyy";
-                        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
-                        mcurrentDate.set(Calendar.YEAR, selectedyear);
-                        mcurrentDate.set(Calendar.MONTH, selectedmonth);
-                        mcurrentDate.set(Calendar.DAY_OF_MONTH,  selectedday);
-                        mDate.setText(sdf.format(mcurrentDate.getTime()));
-                        dateOfMeeting = (sdf.format(mcurrentDate.getTime()));
+                        String year = String.valueOf(selectedyear);
+                        String day = String.valueOf(selectedday);
+                        String month = String.valueOf(selectedmonth);
+                        if(selectedday < 10){
+                            day = "0" + selectedday;
+                        }
+                        if(selectedmonth < 10){
+                            month = "0" + selectedmonth;
+                        }
+                        mDate.setText(month + "/" + day + "/" + year);
+                        dateOfMeeting = (month + "/" + day + "/" + year);
 
                     }
                 },mYear, mMonth, mDay);
@@ -141,7 +145,11 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                 mTimePicker = new TimePickerDialog(CreateEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                        mTime.setText( selectedHour + ":" + selectedMinute);
+                        if (selectedMinute < 10) {
+                            mTime.setText(selectedHour + ":0" + selectedMinute);
+                        } else {
+                            mTime.setText(selectedHour + ":" + selectedMinute);
+                        }
                         timeOfmeeting = ( selectedHour + ":" + selectedMinute);
                     }
                 }, hour, minute, true);
