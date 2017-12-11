@@ -7,12 +7,14 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,6 +29,15 @@ import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -45,6 +56,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private boolean onWelcome = false;
 
     private FusedLocationProviderClient mFusedLocationClient;
+    private getDirectionsTask mGetDirectionsTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +119,14 @@ public class WelcomeActivity extends AppCompatActivity {
                             if (location != null) {
                                 Toast toast = Toast.makeText(getApplicationContext(), "location got", Toast.LENGTH_SHORT);
                                 toast.show();
+
+                                try {
+                                    URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Disneyland&destination=Universal+Studios+Hollywood4&key=AIzaSyBbWG82CGJS1t6RT5DoCV5cjKV8cHrLHNk");
+                                    mGetDirectionsTask = new getDirectionsTask(url);
+                                    mGetDirectionsTask.execute();
+                                } catch (MalformedURLException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     });
@@ -193,4 +213,42 @@ public class WelcomeActivity extends AppCompatActivity {
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
+    private class getDirectionsTask extends AsyncTask<Void, Void, Void>{
+
+        private URL mURL;
+
+        getDirectionsTask(URL url){
+            mURL = url;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                HttpURLConnection  urlConnection = (HttpURLConnection) mURL.openConnection();
+                try{
+                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+
+                    int data = in.read();
+                    String str = "";
+                    while(data != -1){
+                        str += (char)data;
+                        data = in.read();
+                    }
+                    in.close();
+                    Log.i("tester", str);
+                }
+                finally {
+                    urlConnection.disconnect();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            return null;
+        }
+    }
+
 }
+
+
