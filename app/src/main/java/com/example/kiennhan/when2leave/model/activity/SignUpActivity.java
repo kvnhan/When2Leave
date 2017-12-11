@@ -49,11 +49,6 @@ public class SignUpActivity extends AppCompatActivity {
     EditText mPassword;
     EditText mPasswordConfirm;
     EditText mPhoneNumber;
-    EditText mStreetNumber;
-    EditText mStreetName;
-    EditText mCity;
-    EditText mState;
-    EditText mZipCode;
     Button mCreateAccount;
     DataBaseHelper mDB;
 
@@ -89,11 +84,6 @@ public class SignUpActivity extends AppCompatActivity {
         mPasswordConfirm = findViewById(R.id.confirmPassword);
         mEmailAddress = findViewById(R.id.emailAddress);
         mPhoneNumber = findViewById(R.id.phoneNumber);
-        mStreetName = findViewById(R.id.streetName);
-        mStreetNumber = findViewById(R.id.streetNum);
-        mCity = findViewById(R.id.city);
-        mState =  findViewById(R.id.state);
-        mZipCode = findViewById(R.id.zipCode);
         mCreateAccount = findViewById(R.id.createAccount);
 
         pref = getApplicationContext().getSharedPreferences(FIRST, MODE_PRIVATE);
@@ -113,18 +103,12 @@ public class SignUpActivity extends AppCompatActivity {
                 String confirmPassword = mPasswordConfirm.getText().toString();
                 String emailAddress = mEmailAddress.getText().toString();
                 String phoneNumber = mPhoneNumber.getText().toString();
-                String streetName = mStreetName.getText().toString();
-                String streetNumber = mStreetNumber.getText().toString();
-                String city = mCity.getText().toString();
-                String state = mState.getText().toString();
-                String zipCode = mZipCode.getText().toString();
 
                 if(!checkField(firstName,lastName,userName,password,confirmPassword, emailAddress)){
                     return;
                 }
 
-                Address homeAddress = new Address("", streetNumber, streetName,zipCode,state,city);
-                Account newAccount = new Account(uniqueId, firstName, lastName, userName, emailAddress, password, homeAddress);
+                Account newAccount = new Account(uniqueId, firstName, lastName, userName, emailAddress, password);
                 String hashPassord = newAccount.hashPassword(password);
                 mDB = new DataBaseHelper(getApplicationContext());
 
@@ -152,7 +136,6 @@ public class SignUpActivity extends AppCompatActivity {
 
                 if(pref.getBoolean(FIRSTRUN, true)){
                     pref.edit().putBoolean(FIRSTRUN, false).commit();
-                    mDB.addAddress(getApplicationContext(), homeAddress, newAccount, false, null);
                     mDB.addAccount(getApplicationContext(), newAccount, hashPassord);
                     SharedPreferences mypref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
                     final SharedPreferences.Editor editor = mypref.edit();
@@ -162,7 +145,7 @@ public class SignUpActivity extends AppCompatActivity {
                     Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
                     startActivity(intent);
                 }
-                attemptLogin(newAccount, userName, emailAddress, hashPassord, homeAddress);
+                attemptLogin(newAccount, userName, emailAddress, hashPassord);
 
             }
         });
@@ -231,7 +214,7 @@ public class SignUpActivity extends AppCompatActivity {
         return true;
     }
 
-    private void getUserData(final String username, final String email, final Account newAccount, final Address homeAddress, final String hashPassord){
+    private void getUserData(final String username, final String email, final Account newAccount, final String hashPassord){
         myRef.addListenerForSingleValueEvent((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -251,7 +234,7 @@ public class SignUpActivity extends AppCompatActivity {
                         focusView2.requestFocus();
                         listenerCompleted = true;
                         accountExist = true;
-                        checkListenerStatus(username, newAccount, homeAddress, hashPassord);
+                        checkListenerStatus(username, newAccount, hashPassord);
                         break;
                     } else if (acoount.getUserName().equals(username)) {
                         View focusView = null;
@@ -260,7 +243,7 @@ public class SignUpActivity extends AppCompatActivity {
                         focusView.requestFocus();
                         listenerCompleted = true;
                         accountExist = true;
-                        checkListenerStatus(username, newAccount, homeAddress, hashPassord);
+                        checkListenerStatus(username, newAccount, hashPassord);
                         break;
                     } else if (acoount.getEmail().equals(email)) {
                         View focusView2 = null;
@@ -269,12 +252,12 @@ public class SignUpActivity extends AppCompatActivity {
                         focusView2.requestFocus();
                         listenerCompleted = true;
                         accountExist = true;
-                        checkListenerStatus(username, newAccount, homeAddress, hashPassord);
+                        checkListenerStatus(username, newAccount, hashPassord);
                         break;
                     }else {
                         listenerCompleted = true;
                         accountExist = false;
-                        checkListenerStatus(username, newAccount, homeAddress, hashPassord);
+                        checkListenerStatus(username, newAccount, hashPassord);
                         break;
                     }
                 }
@@ -293,20 +276,18 @@ public class SignUpActivity extends AppCompatActivity {
         private String username;
         private String emailAddress;
         private String hashPw;
-        private Address addr;
 
-        public UserLoginTask(Account acc, String username, String emailAddress, String hashPw, Address addr) {
+        public UserLoginTask(Account acc, String username, String emailAddress, String hashPw) {
             this.acc = acc;
             this.username = username;
             this.emailAddress = emailAddress;
             this.hashPw = hashPw;
-            this.addr = addr;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
-            getUserData(username, emailAddress, acc ,addr , hashPw);
+            getUserData(username, emailAddress, acc , hashPw);
 
             return true;
         }
@@ -322,19 +303,18 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-    private void attemptLogin(Account acc, String username, String emailAddress, String hashPw, Address addr) {
+    private void attemptLogin(Account acc, String username, String emailAddress, String hashPw) {
         if (mAuthTask != null) {
             return;
         }
-        mAuthTask = new SignUpActivity.UserLoginTask(acc, username, emailAddress, hashPw, addr);
+        mAuthTask = new SignUpActivity.UserLoginTask(acc, username, emailAddress, hashPw);
         mAuthTask.execute((Void) null);
         }
 
-    private void checkListenerStatus(String username, Account acc, Address addr, String hashPw) {
+    private void checkListenerStatus(String username, Account acc,String hashPw) {
         if (listenerCompleted) {
             if(!accountExist){
                 if (passwordValid && passwordMatch) {
-                    mDB.addAddress(getApplicationContext(), addr, acc, false, null);
                     mDB.addAccount(getApplicationContext(), acc, hashPw);
                     SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
                     final SharedPreferences.Editor editor = pref.edit();

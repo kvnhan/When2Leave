@@ -35,139 +35,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/EventLocation"
+                    android:textColor="@android:color/black"
                     android:textSize="18sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/DESstreetNum"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/StreetNumber"
-                        android:inputType="textPersonName" />
-
-                    <EditText
-                        android:id="@+id/DESstreetName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/StreetName"
-                        android:inputType="textPersonName" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/DEScity"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/City"
-                        android:inputType="textPersonName" />
-
-                    <EditText
-                        android:id="@+id/DESstate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/State"
-                        android:inputType="textPersonName" />
-
-                    <EditText
-                        android:id="@+id/DESzipCode"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/ZipCode"
-                        android:inputType="textPersonName" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:paddingTop="40dp">
 
                 <TextView
+                    android:id="@+id/event_location"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/DefaultLocation"
+                    android:text="@string/FindLocation"
                     android:textSize="18sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/DEFAULTstreetNum"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/StreetNumber"
-                        android:inputType="textPersonName" />
-
-                    <EditText
-                        android:id="@+id/DEFAULTstreetName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/StreetName"
-                        android:inputType="textPersonName" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/DEFAULTcity"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/City"
-                        android:inputType="textPersonName" />
-
-                    <EditText
-                        android:id="@+id/DEFAULTstate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/State"
-                        android:inputType="textPersonName" />
-
-                    <EditText
-                        android:id="@+id/DEFAULTzipCode"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="@string/ZipCode"
-                        android:inputType="textPersonName" />
-
-                </LinearLayout>
 
             </LinearLayout>
 
@@ -182,6 +58,7 @@
                     android:layout_height="wrap_content"
                     android:paddingTop="40dp"
                     android:text="@string/When"
+                    android:textColor="@android:color/black"
                     android:textSize="18sp" />
 
                 <LinearLayout
@@ -220,6 +97,7 @@
                     android:layout_height="wrap_content"
                     android:paddingTop="40dp"
                     android:text="@string/Description"
+                    android:textColor="@android:color/black"
                     android:textSize="18sp" />
 
                 <ScrollView

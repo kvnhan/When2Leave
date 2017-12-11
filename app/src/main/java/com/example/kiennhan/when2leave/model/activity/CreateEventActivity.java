@@ -1,13 +1,18 @@
 package com.example.kiennhan.when2leave.model.activity;
 
+import android.*;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +28,16 @@ import com.example.kiennhan.when2leave.model.Address;
 import com.example.kiennhan.when2leave.model.Date;
 import com.example.kiennhan.when2leave.model.Meetings;
 import com.example.kiennhan.when2leave.model.Time;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.location.LocationServices;
+
+
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -32,15 +47,14 @@ import java.util.UUID;
 
 import database.DataBaseHelper;
 
-import static android.provider.Contacts.SettingsColumns.KEY;
+import static com.google.android.gms.location.places.ui.PlacePicker.getPlace;
 
-public class CreateEventActivity extends AppCompatActivity {
+public class CreateEventActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 
-    EditText mEventName, mEventStreetNum, mEventStreetName, mEventState, mEventCity, mEventZipCode,
-            mDefaultStreetName, mDefaultStreetNum, mDefaultCity, mDefaultState, mDefaultZipCode,
+    EditText mEventName,
             mDescription;
-    TextView mTime, mDate;
+    TextView mTime, mDate, mLocation;
     Button mCreateEvent;
     String dateOfMeeting;
     String timeOfmeeting;
@@ -49,6 +63,8 @@ public class CreateEventActivity extends AppCompatActivity {
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String NAME = "username";
+    int PLACE_PICKER_REQUEST = 1;
+    private GoogleApiClient mGoogleApiClient;
 
 
     @Override
@@ -57,18 +73,36 @@ public class CreateEventActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_event);
 
         mEventName = findViewById(R.id.eventName);
-        mEventStreetNum = findViewById(R.id.DESstreetNum);
-        mEventStreetName = findViewById(R.id.DESstreetName);
-        mEventState  = findViewById(R.id.DESstate);
-        mEventCity = findViewById(R.id.DEScity);
-        mEventZipCode = findViewById(R.id.DESzipCode);
-        mDefaultStreetName  = findViewById(R.id.DEFAULTstreetName);
-        mDefaultStreetNum= findViewById(R.id.DEFAULTstreetNum);
-        mDefaultCity= findViewById(R.id.DEFAULTcity);
-        mDefaultState= findViewById(R.id.DEFAULTstate);
-        mDefaultZipCode= findViewById(R.id.DEFAULTzipCode);
-        mDescription= findViewById(R.id.description);
 
+        mLocation = findViewById(R.id.event_location);
+
+
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                    .addConnectionCallbacks(CreateEventActivity.this)
+                    .addOnConnectionFailedListener(CreateEventActivity.this)
+                    .addApi(LocationServices.API)
+                    .addApi(Places.GEO_DATA_API)
+                    .addApi(Places.PLACE_DETECTION_API)
+                    .build();
+        }
+
+
+
+        final PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+
+        mLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    startActivityForResult(builder.build(CreateEventActivity.this), PLACE_PICKER_REQUEST);
+                } catch (GooglePlayServicesRepairableException e) {
+                    e.printStackTrace();
+                } catch (GooglePlayServicesNotAvailableException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         mDate= findViewById(R.id.datePicker);
         mDate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,6 +150,7 @@ public class CreateEventActivity extends AppCompatActivity {
             }
         });
 
+        // API KEY AIzaSyDDLeXTz5oZaZA2F1N7NIY_sLqhUhzA3Ok
         mCreateEvent = findViewById(R.id.createEvent);
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -127,6 +162,7 @@ public class CreateEventActivity extends AppCompatActivity {
 
                 String meetingID = UUID.randomUUID().toString() + "_" + userName;
                 String eventName = mEventName.getText().toString();
+                /*
                 String eventStreetName =  mEventStreetName.getText().toString();
                 String eventStreetNum =  mEventStreetNum.getText().toString();
                 String eventCity =  mEventCity.getText().toString();
@@ -150,9 +186,10 @@ public class CreateEventActivity extends AppCompatActivity {
                     Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
                     startActivity(intent);
                 }
-
+*/
             }
         });
+
     }
 
     public boolean checkField(String name, String eventStreetnum, String eventStreetname, String eventCity, String eventZipcode, String eventState,
@@ -163,76 +200,6 @@ public class CreateEventActivity extends AppCompatActivity {
             View focusView1 = null;
             mEventName.setError(getString(R.string.error_field_required));
             focusView1 =  mEventName;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventStreetnum.equals("")){
-            View focusView1 = null;
-            mEventStreetNum.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventStreetNum;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventCity.equals("")){
-            View focusView1 = null;
-            mEventCity.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventCity;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventZipcode.equals("")){
-            View focusView1 = null;
-            mEventZipCode.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventZipCode;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventState.equals("")){
-            View focusView1 = null;
-            mEventState.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventState;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventStreetName2.equals("")){
-            View focusView1 = null;
-            mDefaultStreetName.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultStreetName;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventStreetNum2.equals("")){
-            View focusView1 = null;
-            mDefaultStreetNum.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultStreetNum;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventCity2.equals("")){
-            View focusView1 = null;
-            mDefaultCity.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultCity;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventZipcode2.equals("")){
-            View focusView1 = null;
-            mDefaultZipCode.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultZipCode;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventStreetname.equals("")){
-            View focusView1 = null;
-            mEventStreetName.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventStreetName;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventState2.equals("")){
-            View focusView1 = null;
-            mDefaultState.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultState;
             focusView1.requestFocus();
             isready = false;
         }
@@ -254,4 +221,29 @@ public class CreateEventActivity extends AppCompatActivity {
         return isready;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Place place = getPlace(CreateEventActivity.this, data);
+                String toastMsg = String.format("Place: %s", place.getName());
+                Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 }

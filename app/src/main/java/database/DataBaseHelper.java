@@ -135,7 +135,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     * get account
     */
     public Account getAccount(Context context, String id) {
-        Address address = getAddress(context,id);
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
         DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
                 DbSchema.AccountTable.Cols.UID + "=?",
@@ -148,7 +147,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String lastName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.LAST_NAME));
         String userName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.USER_NAME));
         String email = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.EMAIL));
-        Account account = new Account(id,firstName,lastName,userName,email, "", address);
+        Account account = new Account(id,firstName,lastName,userName,email, "");
 
         cursor.close();
         mDatabase.close();
@@ -177,7 +176,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String userName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.USER_NAME));
         String email = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.EMAIL));
         String uid = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.UID));
-        Account account = new Account(uid,firstName,lastName,userName,email, "", null);
+        Account account = new Account(uid,firstName,lastName,userName,email, "");
 
         cursor.close();
         mDatabase.close();

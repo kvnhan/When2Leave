@@ -17,16 +17,14 @@ public class Account {
     public String userName;
     public String email;
     public String password;
-    public Address streetAddress;
 
-    public Account(String uid, String firstName, String lastName, String userName, String email, String password, Address streetAddress) {
+    public Account(String uid, String firstName, String lastName, String userName, String email, String password) {
         this.uid = uid;
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
         this.email = email;
         this.password = password;
-        this.streetAddress = streetAddress;
     }
     
     public String getUid() {
@@ -75,14 +73,6 @@ public class Account {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Address getStreetAddress() {
-        return streetAddress;
-    }
-
-    public void setStreetAddress(Address streetAddress) {
-        this.streetAddress = streetAddress;
     }
 
     public String hashPassword(String password_plaintext) {
