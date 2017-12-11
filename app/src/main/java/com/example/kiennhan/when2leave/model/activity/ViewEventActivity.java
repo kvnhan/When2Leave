@@ -25,6 +25,8 @@ public class ViewEventActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_event);
 
+        //TODO: Check for notification and spawn the correct event
+
         Intent intent = getIntent();
         String name = intent.getStringExtra(EVENTNAME);
         String loc = intent.getStringExtra(LOCATION);

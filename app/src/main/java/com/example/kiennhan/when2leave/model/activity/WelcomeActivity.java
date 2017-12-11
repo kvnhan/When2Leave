@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -76,9 +77,13 @@ public class WelcomeActivity extends AppCompatActivity {
         JobScheduler jobScheduler = (JobScheduler) getApplicationContext().getSystemService(getApplicationContext().JOB_SCHEDULER_SERVICE);
         ComponentName componentName = new ComponentName(getApplicationContext(), When2Leave.class);
         JobInfo jobInfo = new JobInfo.Builder(1, componentName)
-                .setPeriodic(5000)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setPeriodic(15 * 60 * 1000)
+                .setPersisted(true)
                 .build();
-        jobScheduler.schedule(jobInfo);
+        int ret = jobScheduler.schedule(jobInfo);
+        if (ret == JobScheduler.RESULT_SUCCESS) Log.d("FUCK", "Job scheduled successfully!");
+
 
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
