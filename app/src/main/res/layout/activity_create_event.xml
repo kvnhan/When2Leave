@@ -42,7 +42,7 @@
                     android:id="@+id/event_location"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/FindLocation"
+                    android:hint="@string/FindLocation"
                     android:textSize="18sp" />
 
             </LinearLayout>

@@ -11,11 +11,11 @@ public class Meetings {
     private Account account;
     private String timeOfM0eeting;
     private String dateOfMeeting;
-    private Address userLocation;
-    private Address destination;
+    private String userLocation;
+    private String destination;
     private String description;
 
-    public Meetings(String id, String title, Account account, String timeOfM0eeting, String dateOfMeeting, Address userLocation, Address destination, String description) {
+    public Meetings(String id, String title, Account account, String timeOfM0eeting, String dateOfMeeting, String userLocation, String destination, String description) {
         this.id = id;
         this.title = title;
         this.account = account;
@@ -65,19 +65,19 @@ public class Meetings {
         this.dateOfMeeting = dateOfMeeting;
     }
 
-    public Address getUserLocation() {
+    public String getUserLocation() {
         return userLocation;
     }
 
-    public void setUserLocation(Address userLocation) {
+    public void setUserLocation(String userLocation) {
         this.userLocation = userLocation;
     }
 
-    public Address getDestination() {
+    public String getDestination() {
         return destination;
     }
 
-    public void setDestination(Address destination) {
+    public void setDestination(String destination) {
         this.destination = destination;
     }
 

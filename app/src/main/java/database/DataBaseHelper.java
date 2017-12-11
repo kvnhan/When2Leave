@@ -95,13 +95,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     /*
      * add meeting to database
      */
-    public void addMeeting(Context context, Account account, Meetings meetings, Address user, Address des) {
+    public void addMeeting(Context context, Account account, Meetings meetings) {
         mDatabase = new DataBaseHelper(context).getWritableDatabase();
         ContentValues values = getMeetingValues(meetings, account);
         long i = mDatabase.insert(DbSchema.MeetingTable.NAME, null, values);
         mDatabase.close();
-        addAddress(context, des, account, true, meetings);
-        addAddress(context, user, account, true, meetings);
     }
 
     /*
@@ -233,7 +231,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(DbSchema.MeetingTable.Cols.ID, meetings.getId());
         values.put(DbSchema.MeetingTable.Cols.DATE_ID, meetings.getDateOfMeeting());
         values.put(DbSchema.MeetingTable.Cols.DESCRIPTION, meetings.getDescription());
-        values.put(DbSchema.MeetingTable.Cols.DESTINATION_ID, meetings.getId());
+        values.put(DbSchema.MeetingTable.Cols.DESTINATION_ID, meetings.getDestination());
         values.put(DbSchema.MeetingTable.Cols.TITLE, meetings.getTitle());
         values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, meetings.getId());
         values.put(DbSchema.MeetingTable.Cols.TIME_ID, meetings.getTimeOfM0eeting());
@@ -334,21 +332,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String eventID = getMeetingsID(uid, context);
         ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
-        Cursor c = mDatabase.query(DbSchema.AddressTable.NAME, null, DbSchema.AddressTable.Cols.ID + "=?"
-                , new String[]{eventID}, null, null, null);
-
-        String eventStreet = "", eventStrNum ="", eventState = "", eventCity = "", eventZipCode = "";
-        if(c.getCount() > 0) {
-            c.moveToFirst();
-            eventStreet = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NAME));
-            eventStrNum = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NUMBER));
-            eventState = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STATE));
-            eventCity = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.CITY));
-            eventZipCode = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.ZIPCODE));
-        }
-        c.close();
-
-        Address address = new Address(eventID, eventStrNum, eventStreet, eventZipCode, eventState,eventCity);
 
         DataCursorWrapper cursor = queryDatabase(DbSchema.MeetingTable.NAME,
                 DbSchema.MeetingTable.Cols.UID + "=?",
@@ -360,10 +343,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 String eventname = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TITLE));
+                String eventLocation = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESTINATION_ID));
                 String eventTime = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TIME_ID));
                 String eventDate = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DATE_ID));
                 String description = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESCRIPTION));
-                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, address, description);
+                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description);
                 meetingsList.add(newMeeting);
                 cursor.moveToNext();
             }

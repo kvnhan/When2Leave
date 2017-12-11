@@ -59,6 +59,7 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
     String dateOfMeeting;
     String timeOfmeeting;
     DataBaseHelper mDB;
+    String event_Location = "";
 
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
@@ -90,7 +91,7 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
 
 
         final PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-
+        mDescription = findViewById(R.id.description);
         mLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -162,39 +163,21 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
 
                 String meetingID = UUID.randomUUID().toString() + "_" + userName;
                 String eventName = mEventName.getText().toString();
-                /*
-                String eventStreetName =  mEventStreetName.getText().toString();
-                String eventStreetNum =  mEventStreetNum.getText().toString();
-                String eventCity =  mEventCity.getText().toString();
-                String eventZipcode =  mEventZipCode.getText().toString();
-                String eventState =  mEventState.getText().toString();
-                Address destination = new Address(meetingID, eventStreetNum, eventStreetName, eventZipcode, eventState, eventCity);
-
-                String eventStreetName2 =  mDefaultStreetName.getText().toString();
-                String eventStreetNum2 =  mDefaultStreetNum.getText().toString();
-                String eventCity2 =  mDefaultCity.getText().toString();
-                String eventZipcode2 =  mDefaultZipCode.getText().toString();
-                String eventState2 =  mDefaultState.getText().toString();
-
-                boolean isReady = checkField(eventName, eventStreetNum, eventStreetName, eventCity, eventZipcode,eventState, eventStreetName2, eventStreetNum2,
-                        eventCity2, eventZipcode2, eventState2);
+                boolean isReady = checkField(eventName);
                 if(isReady) {
-                    Address userLocation = new Address(meetingID, eventStreetNum2, eventStreetName2, eventZipcode2, eventState2, eventCity2);
-                    Meetings meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, userLocation, destination, mDescription.getText().toString());
-                    mDB.addMeeting(getApplicationContext(), account, meeting, userLocation, destination);
+                    Meetings meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
+                    mDB.addMeeting(getApplicationContext(), account, meeting);
                     Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
                     startActivity(intent);
                 }
-*/
+
             }
         });
 
     }
 
-    public boolean checkField(String name, String eventStreetnum, String eventStreetname, String eventCity, String eventZipcode, String eventState,
-                              String eventStreetName2, String eventStreetNum2, String eventCity2, String eventZipcode2,
-                              String eventState2){
+    public boolean checkField(String name){
         boolean isready = true;
         if(name.equals("")){
             View focusView1 = null;
@@ -217,6 +200,13 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
             focusView1.requestFocus();
             isready = false;
         }
+        if(mLocation.getText().equals("")){
+            View focusView1 = null;
+            mLocation.setError(getString(R.string.error_field_required));
+            focusView1 =  mLocation;
+            focusView1.requestFocus();
+            isready = false;
+        }
 
         return isready;
     }
@@ -226,6 +216,8 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == RESULT_OK) {
                 Place place = getPlace(CreateEventActivity.this, data);
+                event_Location = String.valueOf(place.getAddress());
+                mLocation.setText(event_Location);
                 String toastMsg = String.format("Place: %s", place.getName());
                 Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
             }

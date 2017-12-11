@@ -228,8 +228,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 Intent intent = new Intent(WelcomeActivity.this, ViewEventActivity.class);
                 Meetings meeting =meetingsList.get(position);
                 String name = meeting.getTitle();
-                String location = meeting.getDestination().getStreetNumber() + " " + meeting.getDestination().getStreetName() + " " +
-                        meeting.getDestination().getCity() + " " + meeting.getDestination().getState() + " " + meeting.getDestination().getZipCode();
+                String location = meeting.getDestination();
                 String time = meeting.getTimeOfM0eeting();
                 String date = meeting.getDateOfMeeting();
                 String desc = meeting.getDescription();

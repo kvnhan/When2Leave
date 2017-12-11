@@ -136,8 +136,7 @@ public class EventListFragment extends Fragment {
                 int pos = getAdapterPosition();
                 Meetings meeting = mMeetings.get(pos);
                 String name = meeting.getTitle();
-                String location = meeting.getDestination().getStreetNumber() + " " + meeting.getDestination().getStreetName() + " " +
-                        meeting.getDestination().getCity() + " " + meeting.getDestination().getState() + " " + meeting.getDestination().getZipCode();
+                String location = meeting.getDestination();
                 String time = meeting.getTimeOfM0eeting();
                 String date = meeting.getDateOfMeeting();
                 String desc = meeting.getDescription();
