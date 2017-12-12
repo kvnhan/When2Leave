@@ -150,19 +150,16 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
             public void onClick(View view) {
                 final Calendar mcurrentDate = Calendar.getInstance();
                 int mYear = mcurrentDate.get(Calendar.YEAR);
-                int mMonth=mcurrentDate.get(Calendar.MONTH);
+                int mMonth=mcurrentDate.get(Calendar.MONTH) + 1;
                 int mDay=mcurrentDate.get(Calendar.DAY_OF_MONTH);
 
                 DatePickerDialog mDatePicker=new DatePickerDialog(CreateEventActivity.this, new DatePickerDialog.OnDateSetListener() {
                     public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
                         String year = String.valueOf(selectedyear);
                         String day = String.valueOf(selectedday);
-                        String month = String.valueOf(selectedmonth);
+                        String month = String.valueOf(selectedmonth + 1);
                         if(selectedday < 10){
                             day = "0" + selectedday;
-                        }
-                        if(selectedmonth < 10){
-                            month = "0" + selectedmonth;
                         }
                         mDate.setText(month + "/" + day + "/" + year);
                         dateOfMeeting = (month + "/" + day + "/" + year);
