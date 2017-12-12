@@ -70,7 +70,7 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
                 mMeeting = meeting;
                 mTitleTextView.setText(mMeeting.getTitle());
                 mDateTextView.setText(mMeeting.getDateOfMeeting());
-                mTimeTextView.setText(mMeeting.getTimeOfM0eeting());
+                mTimeTextView.setText(mMeeting.getTimeOfMeeting());
             }
 
         }

@@ -162,7 +162,7 @@ public class WelcomeActivity extends AppCompatActivity {
                                 try {
                                     URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Disneyland&destination=Universal+Studios+Hollywood4&key=AIzaSyBbWG82CGJS1t6RT5DoCV5cjKV8cHrLHNk");
                                     mGetDirectionsTask = new getDirectionsTask(url);
-                                    mGetDirectionsTask.execute();
+//                                    mGetDirectionsTask.execute();
                                 } catch (MalformedURLException e) {
                                     e.printStackTrace();
                                 }
@@ -321,7 +321,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 Meetings meeting =meetingsList.get(position);
                 String name = meeting.getTitle();
                 String location = meeting.getDestination();
-                String time = meeting.getTimeOfM0eeting();
+                String time = meeting.getTimeOfMeeting();
                 String date = meeting.getDateOfMeeting();
                 String desc = meeting.getDescription();
                 intent.putExtra(EVENTNAME, name);

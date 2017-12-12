@@ -41,6 +41,7 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.2'
     compile 'com.google.android.gms:play-services-places:11.6.2'
     compile 'com.google.android.gms:play-services-location:11.6.2'
+    compile 'com.google.code.gson:gson:2.8.0'
 
 
 
