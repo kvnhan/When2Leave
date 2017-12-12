@@ -135,12 +135,9 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                     public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
                         String year = String.valueOf(selectedyear);
                         String day = String.valueOf(selectedday);
-                        String month = String.valueOf(selectedmonth);
+                        String month = String.valueOf(selectedmonth + 1);
                         if(selectedday < 10){
                             day = "0" + selectedday;
-                        }
-                        if(selectedmonth < 10){
-                            month = "0" + selectedmonth;
                         }
                         mDate.setText(month + "/" + day + "/" + year);
                         dateOfMeeting = (month + "/" + day + "/" + year);

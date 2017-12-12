@@ -124,19 +124,20 @@ public class When2Leave extends JobService {
             //select the next upcoming meeting
             String time = DateFormat.getDateTimeInstance().format(new Date());
             Log.i("tester", time);
-            Meetings meeting = meetingsList.get(0);
-            String dateTime = meeting.getDateOfMeeting() + " " + meeting.getTimeOfMeeting();
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm");
-            try {
-                Date d = sdf.parse(dateTime);
-                if(new Date().before(d)){
-                    Log.i("tester", "future meeting");
+            for(Meetings m: meetingsList) {
+                String dateTime = m.getDateOfMeeting() + " " + m.getTimeOfMeeting();
+                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+                try {
+                    Date d = sdf.parse(dateTime);
+
+                    //if the current time is before the next upcoming meeting
+                    if (new Date().before(d)) {
+                        Log.i("tester", "next meeting: " + m.getTitle());
+                        break;
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
-                else{
-                    Log.i("tester", "past meeting");
-                }
-            } catch (ParseException e) {
-                e.printStackTrace();
             }
 
             // Compare meeting time to current time, if close get the distance, duration, and arrival time
