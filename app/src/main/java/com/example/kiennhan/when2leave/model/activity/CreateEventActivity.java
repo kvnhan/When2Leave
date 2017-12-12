@@ -37,7 +37,8 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.location.LocationServices;
-
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 
 import java.text.SimpleDateFormat;
@@ -63,9 +64,15 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
     String event_Location = "";
     String eventName, meetingID;
 
+    private DatabaseReference myRef;
+    private static final String ACCOUNT = "account";
+
+
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String NAME = "username";
+    private static final String UID = "uid";
+    private static final String ACC_UID = "accuid";
     int PLACE_PICKER_REQUEST = 1;
     private GoogleApiClient mGoogleApiClient;
 
@@ -107,6 +114,8 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
         mEventName = findViewById(R.id.eventName);
 
         mLocation = findViewById(R.id.event_location);
+
+        myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
 
 
         if (mGoogleApiClient == null) {
@@ -178,10 +187,11 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         if (selectedMinute < 10) {
                             mTime.setText(selectedHour + ":0" + selectedMinute);
+                            timeOfmeeting = ( selectedHour + ":" + selectedMinute);
                         } else {
                             mTime.setText(selectedHour + ":" + selectedMinute);
+                            timeOfmeeting = ( selectedHour + ":" + selectedMinute);
                         }
-                        timeOfmeeting = ( selectedHour + ":" + selectedMinute);
                     }
                 }, hour, minute, true);
                 mTimePicker.setTitle("Select Time of the Event:");
@@ -221,19 +231,23 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                 meetingID = UUID.randomUUID().toString() + "_" + userName;
                 eventName = mEventName.getText().toString();
                 boolean isReady = checkField(eventName);
+                Meetings meeting;
                 if(isReady) {
                     if(intent.getIntExtra(TWO_CLICK, 0) == 1){
-                        Meetings meeting = new Meetings(finalId, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
+                        meeting = new Meetings(finalId, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
                         mDB.updateEvent(getApplicationContext(), meeting);
                         Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
                         startActivity(intent);
                     }else {
-                        Meetings meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
+                        meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
                         mDB.addMeeting(getApplicationContext(), account, meeting);
                         Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
                         startActivity(intent);
                     }
+
+                    saveMeetingInfo(account, meeting);
+
                 }
 
             }
@@ -248,6 +262,14 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
         }
 
 
+    }
+
+    private boolean saveMeetingInfo(Account account, Meetings meetings){
+        SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
+        String uid = mypref.getString(ACC_UID, null);
+        myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT + "/" + uid);
+        myRef.child(meetings.getId()).setValue(meetings);
+        return true;
     }
 
     public boolean checkField(String name){

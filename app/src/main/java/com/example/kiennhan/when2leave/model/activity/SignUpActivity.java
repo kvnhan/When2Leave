@@ -216,7 +216,8 @@ public class SignUpActivity extends AppCompatActivity {
     private boolean saveUserInfo(Account account, String Hashpw){
         SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
         final SharedPreferences.Editor editor = mypref.edit();
-        editor.putString(ACC_UID, account.getUid());
+        String id = account.getUid();
+        editor.putString(ACC_UID, id);
         editor.commit();
         SharedPreferences pw = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
         final SharedPreferences.Editor edi = pw.edit();
@@ -224,7 +225,7 @@ public class SignUpActivity extends AppCompatActivity {
         edi.commit();
         account.setUid("");
         account.setPassword("");
-        myRef.child(account.getUid()).push().setValue(account);
+        myRef.child(id).setValue(account);
         return true;
     }
 
