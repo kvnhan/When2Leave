@@ -73,6 +73,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private String password;
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
+    private static final String UID = "uid";
+    private static final String ACC_UID = "accuid";
 
 
     /**
@@ -382,6 +384,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             final String email = mEmailView.getText().toString();
             final String password = mPasswordView.getText().toString();
             final Password hp= new Password();
+
             myRef.addListenerForSingleValueEvent((new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -397,7 +400,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             HashMap<String, String> HtKpi = wrapper.getMyMap();
                             String hashP = HtKpi.get(acoount.getUserName());
                             //String hashP = pref.getString(PASSWORD_SAFE, null);
-                            if(hp.equals(hashP)) {
+                            if(hp.checkPassword(password, hashP)) {
                                 listenerCompleted = true;
                                 accountExist = true;
                                 break;
@@ -472,9 +475,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private void checkListenerStatus(String username) {
         if (listenerCompleted) {
             if(accountExist){
+                DataBaseHelper mDB = new DataBaseHelper(getApplicationContext());
+                String uid = mDB.getUUID(username, getApplicationContext());
+                SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
+                final SharedPreferences.Editor edi = mypref.edit();
+                edi.putString(ACC_UID, uid);
+                edi.commit();
                 SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
                 final SharedPreferences.Editor editor = pref.edit();
-                editor.putString(KEY, username);
+                String user = mDB.getUsername(username, getApplicationContext());
+                editor.putString(KEY, user);
                 editor.commit();
                 Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
                 startActivity(intent);

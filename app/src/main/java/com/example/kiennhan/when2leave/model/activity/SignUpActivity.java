@@ -227,6 +227,10 @@ public class SignUpActivity extends AppCompatActivity {
         //Get a Serialize HashMap
         String wrapperStr = mypref.getString(PASSWORD_SAFE, null);
         wrapper = gson.fromJson(wrapperStr, MapWrapper.class);
+        if(wrapper == null){
+            wrapper = new MapWrapper();
+            wrapper.setMyMap(new HashMap<String, String>());
+        }
         HashMap<String, String> HtKpi = wrapper.getMyMap();
         // Put username and hash password in the hashmap
         HtKpi.put(account.getUserName(), Hashpw);
@@ -234,7 +238,7 @@ public class SignUpActivity extends AppCompatActivity {
         wrapper.setMyMap(HtKpi);
         String serializedMap = gson.toJson(wrapper);
         final SharedPreferences.Editor editor = mypref.edit();
-        editor.putString(ACC_UID, serializedMap);
+        editor.putString(PASSWORD_SAFE, serializedMap);
         editor.commit();
         /*
         SharedPreferences pw = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);

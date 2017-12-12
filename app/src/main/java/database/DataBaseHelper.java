@@ -309,16 +309,43 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public String getUUID(String username, Context context){
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
-        DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
-                DbSchema.AccountTable.Cols.USER_NAME + "=?",
-                new String[]{username}
-        );
+        DataCursorWrapper cursor;
+        if(username.contains("@")){
+            cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                    DbSchema.AccountTable.Cols.EMAIL + "=?",
+                    new String[]{username}
+            );
+        }else {
+            cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                    DbSchema.AccountTable.Cols.USER_NAME + "=?",
+                    new String[]{username}
+            );
+        }
         cursor.moveToNext();
         String uid = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.UID));
         mDatabase.close();
         cursor.close();
 
         return uid;
+    }
+
+    public String getUsername(String username, Context context){
+        mDatabase = new DataBaseHelper(context).getReadableDatabase();
+        DataCursorWrapper cursor;
+        if(username.contains("@")){
+            cursor = queryDatabase(DbSchema.AccountTable.NAME,
+                    DbSchema.AccountTable.Cols.EMAIL + "=?",
+                    new String[]{username}
+            );
+        }else{
+            return username;
+        }
+        cursor.moveToNext();
+        String user = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.USER_NAME));
+        mDatabase.close();
+        cursor.close();
+
+        return user;
     }
 
     public String getMeetingsID(String uid, Context context){
@@ -362,13 +389,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 String description = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESCRIPTION));
                 String isComplete = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ISCOMPLETE));
                 Boolean isDone = false;
-                if(!isComplete.equals("true")){
-                    Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description, isDone);
-                    //meetingsList.add(newMeeting);
-                    DateAndTimeList.add(eventDate + " @" + eventTime);
-                    dateAndtimeKey.put(eventDate + " @" + eventTime, eventID);
-                    meetingKey.put(eventID, newMeeting);
+                if(isComplete.equals("true")){
+                    isDone = true;
                 }
+                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description, isDone);
+                //meetingsList.add(newMeeting);
+                DateAndTimeList.add(eventDate + " @" + eventTime);
+                dateAndtimeKey.put(eventDate + " @" + eventTime, eventID);
+                meetingKey.put(eventID, newMeeting);
                 cursor.moveToNext();
             }
         } finally {
@@ -484,6 +512,13 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 DbSchema.MeetingTable.Cols.ID + "=?",
                 new String[]{updatedMeeting.getId()});
 
+        mDatabase.close();
+    }
+
+    public void deleteEvent(Context context, Meetings deletedMeeting){
+        mDatabase = new DataBaseHelper(context).getWritableDatabase();
+        mDatabase.delete(DbSchema.MeetingTable.NAME, DbSchema.MeetingTable.Cols.ID + "=?",
+                new String[]{deletedMeeting.getId()});
         mDatabase.close();
     }
 }

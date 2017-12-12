@@ -61,6 +61,7 @@ public class EventListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.event_recycler_view, container, false);
 
+        mDB = new DataBaseHelper(getContext());
         SharedPreferences pref = getContext().getSharedPreferences(PREF, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
         String uid = mDB.getUUID(userName, getContext());
@@ -69,7 +70,6 @@ public class EventListFragment extends Fragment {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.e_recycler_view);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-
         swipe();
 
         updateUI();
@@ -92,7 +92,6 @@ public class EventListFragment extends Fragment {
 
 
     private void updateUI() {
-        mDB = new DataBaseHelper(getContext());
         SharedPreferences pref = getContext().getSharedPreferences(PREF, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
         String uid = mDB.getUUID(userName, getContext());
@@ -129,6 +128,7 @@ public class EventListFragment extends Fragment {
                                     Meetings meeting = meetingsList.get(position);
                                     meeting.setComplete(true);
                                     myRef.child(meeting.getId()).setValue(meeting);
+                                    mDB.deleteEvent(getContext(), meeting);
                                     meetingsList.remove(position);
                                     mRecyclerView.getAdapter().notifyItemRemoved(position);
                                     Toast.makeText(getActivity(), "Deleted", Toast.LENGTH_SHORT).show();
