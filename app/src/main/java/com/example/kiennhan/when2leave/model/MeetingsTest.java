@@ -1,11 +1,10 @@
 package com.example.kiennhan.when2leave.model;
 
-
 /**
- * Created by Kien Nhan on 11/27/2017.
+ * Created by Kien on 12/11/2017.
  */
 
-public class Meetings {
+public class MeetingsTest {
     private String id;
     private String title;
     private Account account;
@@ -15,15 +14,7 @@ public class Meetings {
     private String destination;
     private String description;
 
-    public Meetings(String id, String title, Account account, String timeOfM0eeting, String dateOfMeeting, String userLocation, String destination, String description) {
-        this.id = id;
-        this.title = title;
-        this.account = account;
-        this.timeOfM0eeting = timeOfM0eeting;
-        this.dateOfMeeting = dateOfMeeting;
-        this.userLocation = userLocation;
-        this.destination = destination;
-        this.description = description;
+    public MeetingsTest(){
     }
 
     public String getId() {

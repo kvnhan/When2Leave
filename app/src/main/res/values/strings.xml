@@ -52,6 +52,7 @@
     <string name="Date">Date</string>
     <string name="Description">Description</string>
     <string name="CreateEvent">Create Event</string>
+    <string name="FindLocation">Find Your Event Location</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="drawer_open">Open navigation drawer</string>

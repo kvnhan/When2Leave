@@ -2,6 +2,8 @@ package com.example.kiennhan.when2leave.model.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,10 +11,15 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.example.kiennhan.when2leave.model.Account;
-import com.example.kiennhan.when2leave.model.Address;
-import com.example.kiennhan.when2leave.model.Meetings;
+import com.example.kiennhan.when2leave.model.AccountTest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
+
 import java.util.UUID;
 
 import database.DataBaseHelper;
@@ -26,19 +33,34 @@ public class SignUpActivity extends AppCompatActivity {
     EditText mPassword;
     EditText mPasswordConfirm;
     EditText mPhoneNumber;
-    EditText mStreetNumber;
-    EditText mStreetName;
-    EditText mCity;
-    EditText mState;
-    EditText mZipCode;
     Button mCreateAccount;
     DataBaseHelper mDB;
 
+    private DatabaseReference myRef;
+    private FirebaseAuth firebaseAuth;
+    private boolean accountExist = true;
+    private SignUpActivity.UserLoginTask mAuthTask = null;
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
+    private static final String FIRST = "first";
+    private static final String FIRSTRUN = "firstrun";
+    private static final String ACCOUNT = "account";
+    private static final String UID = "uid";
+    private static final String ACC_UID = "accuid";
+    private static final String PASSWORD_SAFE = "passwordsafe";
+    private static final String PW = "peace";
+
+    private static final String USER_NAME_KEY= "USER_NAME_KEY";
+    private static final String FIRST_NAME_KEY = "FIRST_NAME_KEY";
+    private static final String LAST_NAME_KEY = "LAST_NAME_KEY";
+    private static final String EMAIL_KEY = "EMAIL_KEY";
+    private static final String PHONE_NUM_KEY = "PHONE_NUM_KEY";
 
     private boolean passwordValid = true;
     private boolean passwordMatch = true;
+
+    private Boolean listenerCompleted = false;
+    SharedPreferences pref = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +74,20 @@ public class SignUpActivity extends AppCompatActivity {
         mPasswordConfirm = findViewById(R.id.confirmPassword);
         mEmailAddress = findViewById(R.id.emailAddress);
         mPhoneNumber = findViewById(R.id.phoneNumber);
-        mStreetName = findViewById(R.id.streetName);
-        mStreetNumber = findViewById(R.id.streetNum);
-        mCity = findViewById(R.id.city);
-        mState =  findViewById(R.id.state);
-        mZipCode = findViewById(R.id.zipCode);
         mCreateAccount = findViewById(R.id.createAccount);
 
+        pref = getApplicationContext().getSharedPreferences(FIRST, MODE_PRIVATE);
+
+
+        myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
+
+        if(savedInstanceState != null){
+            mFirstName.setText(savedInstanceState.getString(FIRST_NAME_KEY));
+            mLastName.setText(savedInstanceState.getString(LAST_NAME_KEY));
+            mUserName.setText(savedInstanceState.getString(USER_NAME_KEY));
+            mEmailAddress.setText(savedInstanceState.getString(EMAIL_KEY));
+            mPhoneNumber.setText(savedInstanceState.getString(PHONE_NUM_KEY));
+        }
         mCreateAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -71,23 +100,16 @@ public class SignUpActivity extends AppCompatActivity {
                 String confirmPassword = mPasswordConfirm.getText().toString();
                 String emailAddress = mEmailAddress.getText().toString();
                 String phoneNumber = mPhoneNumber.getText().toString();
-                String streetName = mStreetName.getText().toString();
-                String streetNumber = mStreetNumber.getText().toString();
-                String city = mCity.getText().toString();
-                String state = mState.getText().toString();
-                String zipCode = mZipCode.getText().toString();
 
                 if(!checkField(firstName,lastName,userName,password,confirmPassword, emailAddress)){
                     return;
                 }
-                //TODO: Need to check for username/email in the database or server and check if confirm password
 
-                Address homeAddress = new Address("", streetNumber, streetName,zipCode,state,city);
-                Account newAccount = new Account(uniqueId, firstName, lastName, userName, emailAddress, password, homeAddress, new ArrayList<Meetings>());
+                Account newAccount = new Account(uniqueId, firstName, lastName, userName, emailAddress, password);
                 String hashPassord = newAccount.hashPassword(password);
                 mDB = new DataBaseHelper(getApplicationContext());
 
-                boolean accountExist = mDB.checkAccount(getApplicationContext(), userName, password);
+                //accountExist = mDB.checkAccount(getApplicationContext(), userName, password);
 
                 if(password.length() < 7){
                     View focusView1 = null;
@@ -109,25 +131,32 @@ public class SignUpActivity extends AppCompatActivity {
                     passwordMatch = false;
                 }
 
-                if(passwordValid && passwordMatch){
-                    if(!accountExist) {
-                        mDB.addAddress(getApplicationContext(), homeAddress, newAccount, false, null);
-                        mDB.addAccount(getApplicationContext(), newAccount, hashPassord);
-                        SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
-                        final SharedPreferences.Editor editor = pref.edit();
-                        editor.putString(KEY, userName);
-                        editor.commit();
-                        Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
-                        startActivity(intent);
-                    }else{
-                        View focusView = null;
-                        mUserName.setError(getString(R.string.UsedUsername));
-                        focusView = mUserName;
-                        focusView.requestFocus();
-                    }
+                if(pref.getBoolean(FIRSTRUN, true)){
+                    pref.edit().putBoolean(FIRSTRUN, false).commit();
+                    mDB.addAccount(getApplicationContext(), newAccount, hashPassord);
+                    SharedPreferences mypref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                    final SharedPreferences.Editor editor = mypref.edit();
+                    editor.putString(KEY, userName);
+                    editor.commit();
+                    saveUserInfo(newAccount, hashPassord);
+                    Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
+                    startActivity(intent);
                 }
+                attemptLogin(newAccount, userName, emailAddress, hashPassord);
+
             }
         });
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString(USER_NAME_KEY, mUserName.getText().toString());
+        savedInstanceState.putString(FIRST_NAME_KEY, mFirstName.getText().toString());
+        savedInstanceState.putString(LAST_NAME_KEY, mLastName.getText().toString());
+        savedInstanceState.putString(PHONE_NUM_KEY, mPhoneNumber.getText().toString());
+        savedInstanceState.putString(EMAIL_KEY, mEmailAddress.getText().toString());
+
     }
 
     public boolean checkField(String firstname, String lastname, String username, String password, String cpassword, String email){
@@ -173,8 +202,144 @@ public class SignUpActivity extends AppCompatActivity {
             focusView1 =  mEmailAddress;
             focusView1.requestFocus();
             isready = false;
+        }else if(!email.contains("@")){
+            View focusView1 = null;
+            mEmailAddress.setError(getString(R.string.error_invalid_email));
+            focusView1 =  mEmailAddress;
+            focusView1.requestFocus();
+            isready = false;
         }
 
         return isready;
     }
+
+    private boolean saveUserInfo(Account account, String Hashpw){
+        SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
+        final SharedPreferences.Editor editor = mypref.edit();
+        editor.putString(ACC_UID, account.getUid());
+        editor.commit();
+        SharedPreferences pw = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
+        final SharedPreferences.Editor edi = pw.edit();
+        edi.putString(PASSWORD_SAFE, Hashpw);
+        edi.commit();
+        account.setUid("");
+        account.setPassword("");
+        myRef.child(account.getUid()).push().setValue(account);
+        return true;
+    }
+
+    private void getUserData(final String username, final String email, final Account newAccount, final String hashPassord){
+        myRef.addListenerForSingleValueEvent((new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterable<DataSnapshot> children = dataSnapshot.getChildren();
+                mUserName.setError(null);
+                mEmailAddress.setError(null);
+                for (DataSnapshot child : children) {
+                    AccountTest acoount = child.getValue(AccountTest.class);
+                    if (acoount.getUserName().equals(username) && acoount.getEmail().equals(email)) {
+                        View focusView = null;
+                        View focusView2 = null;
+                        mUserName.setError(getString(R.string.UsedUsername));
+                        mEmailAddress.setError("You have already signed up with this email address");
+                        focusView = mUserName;
+                        focusView2 = mEmailAddress;
+                        focusView.requestFocus();
+                        focusView2.requestFocus();
+                        listenerCompleted = true;
+                        accountExist = true;
+                        checkListenerStatus(username, newAccount, hashPassord);
+                        break;
+                    } else if (acoount.getUserName().equals(username)) {
+                        View focusView = null;
+                        mUserName.setError(getString(R.string.UsedUsername));
+                        focusView = mUserName;
+                        focusView.requestFocus();
+                        listenerCompleted = true;
+                        accountExist = true;
+                        checkListenerStatus(username, newAccount, hashPassord);
+                        break;
+                    } else if (acoount.getEmail().equals(email)) {
+                        View focusView2 = null;
+                        mEmailAddress.setError("You have already signed up with this email address");
+                        focusView2 = mEmailAddress;
+                        focusView2.requestFocus();
+                        listenerCompleted = true;
+                        accountExist = true;
+                        checkListenerStatus(username, newAccount, hashPassord);
+                        break;
+                    }else {
+                        listenerCompleted = true;
+                        accountExist = false;
+                        checkListenerStatus(username, newAccount, hashPassord);
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        }));
+
+    }
+
+    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+
+        private Account acc;
+        private String username;
+        private String emailAddress;
+        private String hashPw;
+
+        public UserLoginTask(Account acc, String username, String emailAddress, String hashPw) {
+            this.acc = acc;
+            this.username = username;
+            this.emailAddress = emailAddress;
+            this.hashPw = hashPw;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+            getUserData(username, emailAddress, acc , hashPw);
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mAuthTask = null;
+        }
+
+        @Override
+        protected void onCancelled() {
+            mAuthTask = null;
+        }
+    }
+
+    private void attemptLogin(Account acc, String username, String emailAddress, String hashPw) {
+        if (mAuthTask != null) {
+            return;
+        }
+        mAuthTask = new SignUpActivity.UserLoginTask(acc, username, emailAddress, hashPw);
+        mAuthTask.execute((Void) null);
+        }
+
+    private void checkListenerStatus(String username, Account acc,String hashPw) {
+        if (listenerCompleted) {
+            if(!accountExist){
+                if (passwordValid && passwordMatch) {
+                    mDB.addAccount(getApplicationContext(), acc, hashPw);
+                    SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                    final SharedPreferences.Editor editor = pref.edit();
+                    editor.putString(KEY, username);
+                    editor.commit();
+                    saveUserInfo(acc, hashPw);
+                    Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
+                    startActivity(intent);
+                }
+            }
+        }
+    }
+
 }

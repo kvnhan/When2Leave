@@ -1,13 +1,19 @@
 package com.example.kiennhan.when2leave.model.activity;
 
+import android.*;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +29,16 @@ import com.example.kiennhan.when2leave.model.Address;
 import com.example.kiennhan.when2leave.model.Date;
 import com.example.kiennhan.when2leave.model.Meetings;
 import com.example.kiennhan.when2leave.model.Time;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.location.LocationServices;
+
+
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -32,24 +48,43 @@ import java.util.UUID;
 
 import database.DataBaseHelper;
 
-import static android.provider.Contacts.SettingsColumns.KEY;
+import static com.google.android.gms.location.places.ui.PlacePicker.getPlace;
 
-public class CreateEventActivity extends AppCompatActivity {
+public class CreateEventActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 
-    EditText mEventName, mEventStreetNum, mEventStreetName, mEventState, mEventCity, mEventZipCode,
-            mDefaultStreetName, mDefaultStreetNum, mDefaultCity, mDefaultState, mDefaultZipCode,
+    EditText mEventName,
             mDescription;
-    TextView mTime, mDate;
+    TextView mTime, mDate, mLocation;
     Button mCreateEvent;
     String dateOfMeeting;
     String timeOfmeeting;
     DataBaseHelper mDB;
+    String event_Location = "";
 
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String NAME = "username";
+    int PLACE_PICKER_REQUEST = 1;
+    private GoogleApiClient mGoogleApiClient;
 
+    private static final String EVENT_NAME = "EVENT_NAME";
+    private static final String DES = "DES";
+    private static final String TIME_KEY = "TIME_KEY";
+    private static final String DATE_KEY = "DATE_KEY";
+    private static final String LOCATION = "LOCATION";
+
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString(EVENT_NAME, mEventName.getText().toString());
+        savedInstanceState.putString(DES, mDescription.getText().toString());
+        savedInstanceState.putString(TIME_KEY, mTime.getText().toString());
+        savedInstanceState.putString(DATE_KEY, mDate.getText().toString());
+        savedInstanceState.putString(LOCATION, mLocation.getText().toString());
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +92,36 @@ public class CreateEventActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_event);
 
         mEventName = findViewById(R.id.eventName);
-        mEventStreetNum = findViewById(R.id.DESstreetNum);
-        mEventStreetName = findViewById(R.id.DESstreetName);
-        mEventState  = findViewById(R.id.DESstate);
-        mEventCity = findViewById(R.id.DEScity);
-        mEventZipCode = findViewById(R.id.DESzipCode);
-        mDefaultStreetName  = findViewById(R.id.DEFAULTstreetName);
-        mDefaultStreetNum= findViewById(R.id.DEFAULTstreetNum);
-        mDefaultCity= findViewById(R.id.DEFAULTcity);
-        mDefaultState= findViewById(R.id.DEFAULTstate);
-        mDefaultZipCode= findViewById(R.id.DEFAULTzipCode);
-        mDescription= findViewById(R.id.description);
 
+        mLocation = findViewById(R.id.event_location);
+
+
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                    .addConnectionCallbacks(CreateEventActivity.this)
+                    .addOnConnectionFailedListener(CreateEventActivity.this)
+                    .addApi(LocationServices.API)
+                    .addApi(Places.GEO_DATA_API)
+                    .addApi(Places.PLACE_DETECTION_API)
+                    .build();
+        }
+
+
+
+        final PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+        mDescription = findViewById(R.id.description);
+        mLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    startActivityForResult(builder.build(CreateEventActivity.this), PLACE_PICKER_REQUEST);
+                } catch (GooglePlayServicesRepairableException e) {
+                    e.printStackTrace();
+                } catch (GooglePlayServicesNotAvailableException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         mDate= findViewById(R.id.datePicker);
         mDate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,13 +133,17 @@ public class CreateEventActivity extends AppCompatActivity {
 
                 DatePickerDialog mDatePicker=new DatePickerDialog(CreateEventActivity.this, new DatePickerDialog.OnDateSetListener() {
                     public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                        String myFormat = "dd/MMM/yyyy";
-                        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
-                        mcurrentDate.set(Calendar.YEAR, selectedyear);
-                        mcurrentDate.set(Calendar.MONTH, selectedmonth);
-                        mcurrentDate.set(Calendar.DAY_OF_MONTH,  selectedday);
-                        mDate.setText(sdf.format(mcurrentDate.getTime()));
-                        dateOfMeeting = (sdf.format(mcurrentDate.getTime()));
+                        String year = String.valueOf(selectedyear);
+                        String day = String.valueOf(selectedday);
+                        String month = String.valueOf(selectedmonth);
+                        if(selectedday < 10){
+                            day = "0" + selectedday;
+                        }
+                        if(selectedmonth < 10){
+                            month = "0" + selectedmonth;
+                        }
+                        mDate.setText(month + "/" + day + "/" + year);
+                        dateOfMeeting = (month + "/" + day + "/" + year);
 
                     }
                 },mYear, mMonth, mDay);
@@ -106,7 +163,11 @@ public class CreateEventActivity extends AppCompatActivity {
                 mTimePicker = new TimePickerDialog(CreateEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                        mTime.setText( selectedHour + ":" + selectedMinute);
+                        if (selectedMinute < 10) {
+                            mTime.setText(selectedHour + ":0" + selectedMinute);
+                        } else {
+                            mTime.setText(selectedHour + ":" + selectedMinute);
+                        }
                         timeOfmeeting = ( selectedHour + ":" + selectedMinute);
                     }
                 }, hour, minute, true);
@@ -116,6 +177,7 @@ public class CreateEventActivity extends AppCompatActivity {
             }
         });
 
+        // API KEY AIzaSyDDLeXTz5oZaZA2F1N7NIY_sLqhUhzA3Ok
         mCreateEvent = findViewById(R.id.createEvent);
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -127,25 +189,10 @@ public class CreateEventActivity extends AppCompatActivity {
 
                 String meetingID = UUID.randomUUID().toString() + "_" + userName;
                 String eventName = mEventName.getText().toString();
-                String eventStreetName =  mEventStreetName.getText().toString();
-                String eventStreetNum =  mEventStreetNum.getText().toString();
-                String eventCity =  mEventCity.getText().toString();
-                String eventZipcode =  mEventZipCode.getText().toString();
-                String eventState =  mEventState.getText().toString();
-                Address destination = new Address(meetingID, eventStreetNum, eventStreetName, eventZipcode, eventState, eventCity);
-
-                String eventStreetName2 =  mDefaultStreetName.getText().toString();
-                String eventStreetNum2 =  mDefaultStreetNum.getText().toString();
-                String eventCity2 =  mDefaultCity.getText().toString();
-                String eventZipcode2 =  mDefaultZipCode.getText().toString();
-                String eventState2 =  mDefaultState.getText().toString();
-
-                boolean isReady = checkField(eventName, eventStreetNum, eventStreetName, eventCity, eventZipcode,eventState, eventStreetName2, eventStreetNum2,
-                        eventCity2, eventZipcode2, eventState2);
+                boolean isReady = checkField(eventName);
                 if(isReady) {
-                    Address userLocation = new Address(meetingID, eventStreetNum2, eventStreetName2, eventZipcode2, eventState2, eventCity2);
-                    Meetings meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, userLocation, destination, mDescription.getText().toString());
-                    mDB.addMeeting(getApplicationContext(), account, meeting, userLocation, destination);
+                    Meetings meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
+                    mDB.addMeeting(getApplicationContext(), account, meeting);
                     Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
                     startActivity(intent);
@@ -153,86 +200,23 @@ public class CreateEventActivity extends AppCompatActivity {
 
             }
         });
+
+        if(savedInstanceState != null){
+            mEventName.setText(savedInstanceState.getString(EVENT_NAME));
+            mDescription.setText(savedInstanceState.getString(DES));
+            mTime.setText(savedInstanceState.getString(TIME_KEY));
+            mDate.setText(savedInstanceState.getString(DATE_KEY));
+            mLocation.setText(savedInstanceState.getString(LOCATION));
+        }
+
     }
 
-    public boolean checkField(String name, String eventStreetnum, String eventStreetname, String eventCity, String eventZipcode, String eventState,
-                              String eventStreetName2, String eventStreetNum2, String eventCity2, String eventZipcode2,
-                              String eventState2){
+    public boolean checkField(String name){
         boolean isready = true;
         if(name.equals("")){
             View focusView1 = null;
             mEventName.setError(getString(R.string.error_field_required));
             focusView1 =  mEventName;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventStreetnum.equals("")){
-            View focusView1 = null;
-            mEventStreetNum.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventStreetNum;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventCity.equals("")){
-            View focusView1 = null;
-            mEventCity.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventCity;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventZipcode.equals("")){
-            View focusView1 = null;
-            mEventZipCode.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventZipCode;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventState.equals("")){
-            View focusView1 = null;
-            mEventState.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventState;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventStreetName2.equals("")){
-            View focusView1 = null;
-            mDefaultStreetName.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultStreetName;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventStreetNum2.equals("")){
-            View focusView1 = null;
-            mDefaultStreetNum.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultStreetNum;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventCity2.equals("")){
-            View focusView1 = null;
-            mDefaultCity.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultCity;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventZipcode2.equals("")){
-            View focusView1 = null;
-            mDefaultZipCode.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultZipCode;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventStreetname.equals("")){
-            View focusView1 = null;
-            mEventStreetName.setError(getString(R.string.error_field_required));
-            focusView1 =  mEventStreetName;
-            focusView1.requestFocus();
-            isready = false;
-        }
-        if(eventState2.equals("")){
-            View focusView1 = null;
-            mDefaultState.setError(getString(R.string.error_field_required));
-            focusView1 =  mDefaultState;
             focusView1.requestFocus();
             isready = false;
         }
@@ -250,8 +234,40 @@ public class CreateEventActivity extends AppCompatActivity {
             focusView1.requestFocus();
             isready = false;
         }
+        if(mLocation.getText().equals("")){
+            View focusView1 = null;
+            mLocation.setError(getString(R.string.error_field_required));
+            focusView1 =  mLocation;
+            focusView1.requestFocus();
+            isready = false;
+        }
 
         return isready;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Place place = getPlace(CreateEventActivity.this, data);
+                event_Location = String.valueOf(place.getAddress());
+                mLocation.setText(event_Location);
+            }
+        }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 }

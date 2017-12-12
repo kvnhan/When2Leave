@@ -14,7 +14,15 @@ import com.example.kiennhan.when2leave.model.Address;
 import com.example.kiennhan.when2leave.model.Meetings;
 import com.example.kiennhan.when2leave.model.Password;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 
 public class DataBaseHelper extends SQLiteOpenHelper {
     private static final int VERSION = 1;
@@ -95,13 +103,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     /*
      * add meeting to database
      */
-    public void addMeeting(Context context, Account account, Meetings meetings, Address user, Address des) {
+    public void addMeeting(Context context, Account account, Meetings meetings) {
         mDatabase = new DataBaseHelper(context).getWritableDatabase();
         ContentValues values = getMeetingValues(meetings, account);
         long i = mDatabase.insert(DbSchema.MeetingTable.NAME, null, values);
         mDatabase.close();
-        addAddress(context, des, account, true, meetings);
-        addAddress(context, user, account, true, meetings);
     }
 
     /*
@@ -135,7 +141,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     * get account
     */
     public Account getAccount(Context context, String id) {
-        Address address = getAddress(context,id);
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
         DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
                 DbSchema.AccountTable.Cols.UID + "=?",
@@ -148,7 +153,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String lastName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.LAST_NAME));
         String userName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.USER_NAME));
         String email = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.EMAIL));
-        Account account = new Account(id,firstName,lastName,userName,email, "", address, new ArrayList<Meetings>());
+        Account account = new Account(id,firstName,lastName,userName,email, "");
 
         cursor.close();
         mDatabase.close();
@@ -177,7 +182,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String userName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.USER_NAME));
         String email = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.EMAIL));
         String uid = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.UID));
-        Account account = new Account(uid,firstName,lastName,userName,email, "", null, new ArrayList<Meetings>());
+        Account account = new Account(uid,firstName,lastName,userName,email, "");
 
         cursor.close();
         mDatabase.close();
@@ -234,7 +239,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(DbSchema.MeetingTable.Cols.ID, meetings.getId());
         values.put(DbSchema.MeetingTable.Cols.DATE_ID, meetings.getDateOfMeeting());
         values.put(DbSchema.MeetingTable.Cols.DESCRIPTION, meetings.getDescription());
-        values.put(DbSchema.MeetingTable.Cols.DESTINATION_ID, meetings.getId());
+        values.put(DbSchema.MeetingTable.Cols.DESTINATION_ID, meetings.getDestination());
         values.put(DbSchema.MeetingTable.Cols.TITLE, meetings.getTitle());
         values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, meetings.getId());
         values.put(DbSchema.MeetingTable.Cols.TIME_ID, meetings.getTimeOfM0eeting());
@@ -322,30 +327,21 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 new String[]{uid}
         );
 
-
-        cursor.moveToFirst();
-        eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
+        if(cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
+        }
 
 
         return eventID;
     }
 
     public ArrayList<Meetings> getMeetings(String uid, Context context){
-        String eventID = getMeetingsID(uid, context);
         ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
+        ArrayList<String> DateAndTimeList = new ArrayList<String>();
+        HashMap<String, String> dateAndtimeKey = new HashMap<String, String>();
+        HashMap<String, Meetings> meetingKey = new HashMap<String, Meetings>();
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
-        Cursor c = mDatabase.query(DbSchema.AddressTable.NAME, null, DbSchema.AddressTable.Cols.ID + "=?"
-                , new String[]{eventID}, null, null, null);
-
-        c.moveToFirst();
-        String eventStreet = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NAME));
-        String eventStrNum = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STREET_NUMBER));
-        String eventState = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.STATE));
-        String eventCity = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.CITY));
-        String eventZipCode = c.getString(c.getColumnIndex(DbSchema.AddressTable.Cols.ZIPCODE));
-        c.close();
-
-        Address address = new Address(eventID, eventStrNum, eventStreet, eventZipCode, eventState,eventCity);
 
         DataCursorWrapper cursor = queryDatabase(DbSchema.MeetingTable.NAME,
                 DbSchema.MeetingTable.Cols.UID + "=?",
@@ -356,12 +352,17 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         try {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
+                String eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
                 String eventname = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TITLE));
+                String eventLocation = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESTINATION_ID));
                 String eventTime = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TIME_ID));
                 String eventDate = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DATE_ID));
                 String description = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESCRIPTION));
-                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, address, description);
-                meetingsList.add(newMeeting);
+                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description);
+                //meetingsList.add(newMeeting);
+                DateAndTimeList.add(eventDate + " @" + eventTime);
+                dateAndtimeKey.put(eventDate + " @" + eventTime, eventID);
+                meetingKey.put(eventID, newMeeting);
                 cursor.moveToNext();
             }
         } finally {
@@ -369,7 +370,92 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
 
         mDatabase.close();
+        Collections.sort(DateAndTimeList, new Comparator<String>() {
+            DateFormat f = new SimpleDateFormat("MM/dd/yyyy '@'hh:mm");
+            @Override
+            public int compare(String o1, String o2) {
+                try {
+                    return f.parse(o1).compareTo(f.parse(o2));
+                } catch (ParseException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        });
 
+        for(String s: DateAndTimeList){
+            Meetings m = meetingKey.get(dateAndtimeKey.get(s));
+            meetingsList.add(m);
+        }
+        return meetingsList;
+    }
+
+    public ArrayList<Meetings> getWeeklyMeetings(String uid, Context context){
+        ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
+        ArrayList<String> DateAndTimeList = new ArrayList<String>();
+        HashMap<String, String> dateAndtimeKey = new HashMap<String, String>();
+        HashMap<String, Meetings> meetingKey = new HashMap<String, Meetings>();
+        mDatabase = new DataBaseHelper(context).getReadableDatabase();
+
+        DataCursorWrapper cursor = queryDatabase(DbSchema.MeetingTable.NAME,
+                DbSchema.MeetingTable.Cols.UID + "=?",
+                new String[]{uid}
+        );
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, 1);
+        int firstday = cal.get(Calendar.DAY_OF_MONTH);
+        cal.set(Calendar.DAY_OF_WEEK, 7);
+        int lastday = cal.get(Calendar.DAY_OF_MONTH);
+
+        System.out.println(cursor.getCount());
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                String eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
+                String eventname = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TITLE));
+                String eventLocation = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESTINATION_ID));
+                String eventTime = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TIME_ID));
+                String eventDate = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DATE_ID));
+                String description = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESCRIPTION));
+                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description);
+                //meetingsList.add(newMeeting);
+                DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+                Date startDate=null;
+                String newDateString = null;
+                startDate = df.parse(eventDate);
+                if(startDate.getDate() >= firstday && startDate.getDate() <= lastday) {
+                    DateAndTimeList.add(eventDate + " @" + eventTime);
+                    dateAndtimeKey.put(eventDate + " @" + eventTime, eventID);
+                    meetingKey.put(eventID, newMeeting);
+                }
+                cursor.moveToNext();
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+
+        mDatabase.close();
+        if(DateAndTimeList.size() > 0) {
+            Collections.sort(DateAndTimeList, new Comparator<String>() {
+                DateFormat f = new SimpleDateFormat("MM/dd/yyyy '@'hh:mm");
+
+                @Override
+                public int compare(String o1, String o2) {
+                    try {
+                        return f.parse(o1).compareTo(f.parse(o2));
+                    } catch (ParseException e) {
+                        throw new IllegalArgumentException(e);
+                    }
+                }
+            });
+        }
+
+        for(String s: DateAndTimeList){
+            Meetings m = meetingKey.get(dateAndtimeKey.get(s));
+            meetingsList.add(m);
+        }
         return meetingsList;
     }
 }

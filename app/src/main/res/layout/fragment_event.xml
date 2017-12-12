@@ -53,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ems="10"
-                android:inputType="textPersonName" />
+                android:inputType="textMultiLine|textLongMessage" />
         </LinearLayout>
 
         <LinearLayout
@@ -116,16 +116,30 @@
                     android:layout_height="wrap_content"
                     android:text="@string/Description"
                     android:textSize="18sp" />
+
             </RelativeLayout>
 
-            <EditText
-                android:id="@+id/event_Description"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:ems="10"
-                android:inputType="textMultiLine"
-                android:visibility="invisible" />
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="152dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <EditText
+                        android:id="@+id/event_Description"
+                        android:layout_width="match_parent"
+                        android:layout_height="152dp"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:gravity="top|left"
+                        android:inputType="textMultiLine"
+                        android:maxLength="250"
+                        android:visibility="visible" />
+                </LinearLayout>
+            </ScrollView>
 
         </LinearLayout>
 

@@ -7,7 +7,7 @@
     tools:context="com.example.kiennhan.when2leave.model.activity.SignUpActivity">
 
     <ScrollView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
