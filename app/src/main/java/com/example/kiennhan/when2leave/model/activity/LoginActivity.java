@@ -427,41 +427,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-            showProgress(false);
-/*
-            if (success) {
-                if(!accountExist){
-                    AlertDialog.Builder builder1 = new AlertDialog.Builder(LoginActivity.this);
-                    builder1.setMessage("You have enter an incorrect username or password");
-                    builder1.setCancelable(true);
-
-                    builder1.setPositiveButton(
-                            "Sign Up",
-
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
-                                    startActivity(intent);
-                                }
-                            });
-
-                    builder1.setNegativeButton(
-                            "Try Again ?",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
-
-                    AlertDialog alert11 = builder1.create();
-                    alert11.show();
-                }
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-            */
-        }
+            showProgress(false);}
 
         @Override
         protected void onCancelled() {

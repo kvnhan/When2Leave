@@ -54,6 +54,8 @@ public class SignUpActivity extends AppCompatActivity {
     private static final String ACC_UID = "accuid";
     private static final String PASSWORD_SAFE = "passwordsafe";
     private static final String PW = "peace";
+    private static final String INBOX = "inbox";
+    private static final String INBOX_ID = "inboxID";
 
     private static final String USER_NAME_KEY= "USER_NAME_KEY";
     private static final String FIRST_NAME_KEY = "FIRST_NAME_KEY";
@@ -82,8 +84,16 @@ public class SignUpActivity extends AppCompatActivity {
         mCreateAccount = findViewById(R.id.createAccount);
 
         pref = getApplicationContext().getSharedPreferences(FIRST, MODE_PRIVATE);
-
-
+        /*
+        SharedPreferences spref = getApplicationContext().getSharedPreferences(INBOX, MODE_PRIVATE);
+        String uniqueINBOX = null;
+        if(spref.getString(INBOX_ID, null) == null){
+            uniqueINBOX = UUID.randomUUID().toString();
+            spref.edit().putString(INBOX_ID, null).commit();
+        }else{
+            uniqueINBOX = spref.getString(INBOX_ID, null);
+        }
+        */
         myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
 
         if(savedInstanceState != null){
@@ -272,7 +282,6 @@ public class SignUpActivity extends AppCompatActivity {
                         focusView2.requestFocus();
                         listenerCompleted = true;
                         accountExist = true;
-                        checkListenerStatus(username, newAccount, hashPassord);
                         break;
                     } else if (acoount.getUserName().equals(username)) {
                         View focusView = null;
@@ -281,7 +290,6 @@ public class SignUpActivity extends AppCompatActivity {
                         focusView.requestFocus();
                         listenerCompleted = true;
                         accountExist = true;
-                        checkListenerStatus(username, newAccount, hashPassord);
                         break;
                     } else if (acoount.getEmail().equals(email)) {
                         View focusView2 = null;
@@ -290,15 +298,14 @@ public class SignUpActivity extends AppCompatActivity {
                         focusView2.requestFocus();
                         listenerCompleted = true;
                         accountExist = true;
-                        checkListenerStatus(username, newAccount, hashPassord);
                         break;
                     }else {
                         listenerCompleted = true;
                         accountExist = false;
-                        checkListenerStatus(username, newAccount, hashPassord);
-                        break;
                     }
                 }
+
+                checkListenerStatus(username, newAccount, hashPassord);
             }
 
             @Override

@@ -239,7 +239,7 @@ public class WelcomeActivity extends AppCompatActivity {
             @Override
             public void onItemClick(View view, int position) {
                 Intent intent = new Intent(WelcomeActivity.this, ViewEventActivity.class);
-                Meetings meeting =meetingsList.get(position);
+                Meetings meeting = meetingsList.get(position);
                 String name = meeting.getTitle();
                 String location = meeting.getDestination();
                 String time = meeting.getTimeOfM0eeting();

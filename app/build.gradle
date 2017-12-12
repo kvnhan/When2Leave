@@ -40,7 +40,8 @@ dependencies {
     compile 'com.google.android.gms:play-services-places:11.6.2'
     compile 'com.google.android.gms:play-services-location:11.6.2'
     compile 'com.google.code.gson:gson:2.8.1'
-    androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
+    androidTestCompile 'com.android.support.test.espresso:espresso-intents:3.0.1'
+
 
 
 
