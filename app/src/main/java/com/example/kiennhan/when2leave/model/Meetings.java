@@ -14,8 +14,10 @@ public class Meetings {
     private String userLocation;
     private String destination;
     private String description;
+    private Boolean isComplete;
 
-    public Meetings(String id, String title, Account account, String timeOfM0eeting, String dateOfMeeting, String userLocation, String destination, String description) {
+    public Meetings(String id, String title, Account account, String timeOfM0eeting, String dateOfMeeting, String userLocation,
+                    String destination, String description, Boolean isComplete) {
         this.id = id;
         this.title = title;
         this.account = account;
@@ -24,6 +26,15 @@ public class Meetings {
         this.userLocation = userLocation;
         this.destination = destination;
         this.description = description;
+        this.isComplete = isComplete;
+    }
+
+    public Boolean getComplete() {
+        return isComplete;
+    }
+
+    public void setComplete(Boolean complete) {
+        isComplete = complete;
     }
 
     public String getId() {

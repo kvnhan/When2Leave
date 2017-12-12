@@ -13,8 +13,17 @@ public class MeetingsTest {
     private String userLocation;
     private String destination;
     private String description;
+    private Boolean isComplete;
 
     public MeetingsTest(){
+    }
+
+    public Boolean getComplete() {
+        return isComplete;
+    }
+
+    public void setComplete(Boolean complete) {
+        isComplete = complete;
     }
 
     public String getId() {

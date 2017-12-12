@@ -37,6 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.example.kiennhan.when2leave.model.Account;
@@ -44,11 +45,13 @@ import com.example.kiennhan.when2leave.model.AccountTest;
 import com.example.kiennhan.when2leave.model.Address;
 import com.example.kiennhan.when2leave.model.Password;
 import com.example.kiennhan.when2leave.model.activity.R;
+import com.example.kiennhan.when2leave.model.activity.wrapper.MapWrapper;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 
 import database.DataBaseHelper;
 
@@ -386,9 +389,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     for (DataSnapshot child : children) {
                         AccountTest acoount = child.getValue(AccountTest.class);
                         if (acoount.getUserName().equals(email) || acoount.getEmail().equals(email)) {
+                            Gson gson = new Gson();
+                            MapWrapper wrapper = new MapWrapper();
                             SharedPreferences pref = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
-                            String hashP = pref.getString(PASSWORD_SAFE, null);
-                            if(hp.checkPassword(password,hashP)) {
+                            String wrapperStr = pref.getString(PASSWORD_SAFE, null);
+                            wrapper = gson.fromJson(wrapperStr, MapWrapper.class);
+                            HashMap<String, String> HtKpi = wrapper.getMyMap();
+                            String hashP = HtKpi.get(acoount.getUserName());
+                            //String hashP = pref.getString(PASSWORD_SAFE, null);
+                            if(hp.equals(hashP)) {
                                 listenerCompleted = true;
                                 accountExist = true;
                                 break;
@@ -398,7 +407,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             accountExist = false;
                         }
                     }
-                    checkListenerStatus();
+                    checkListenerStatus(email);
                 }
 
                 @Override
@@ -460,9 +469,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     }
 
-    private void checkListenerStatus() {
+    private void checkListenerStatus(String username) {
         if (listenerCompleted) {
             if(accountExist){
+                SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                final SharedPreferences.Editor editor = pref.edit();
+                editor.putString(KEY, username);
+                editor.commit();
                 Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
                 startActivity(intent);
             }else{

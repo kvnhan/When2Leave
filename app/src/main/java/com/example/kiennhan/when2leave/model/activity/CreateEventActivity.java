@@ -234,12 +234,12 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                 Meetings meeting;
                 if(isReady) {
                     if(intent.getIntExtra(TWO_CLICK, 0) == 1){
-                        meeting = new Meetings(finalId, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
+                        meeting = new Meetings(finalId, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString(), false);
                         mDB.updateEvent(getApplicationContext(), meeting);
                         Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
                         startActivity(intent);
                     }else {
-                        meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
+                        meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString(), false);
                         mDB.addMeeting(getApplicationContext(), account, meeting);
                         Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);

@@ -1,17 +1,23 @@
 package com.example.kiennhan.when2leave.model.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.kiennhan.when2leave.model.Meetings;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +42,10 @@ public class EventListFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private EventAdapter mAdapter;
     private DataBaseHelper mDB;
+    ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
+
+    private DatabaseReference myRef;
+    private static final String ACCOUNT = "account";
 
 
 
@@ -51,9 +61,16 @@ public class EventListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.event_recycler_view, container, false);
 
+        SharedPreferences pref = getContext().getSharedPreferences(PREF, MODE_PRIVATE);
+        String userName = pref.getString(KEY, null);
+        String uid = mDB.getUUID(userName, getContext());
+        myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT + "/" + uid);
+
         mRecyclerView = (RecyclerView) view.findViewById(R.id.e_recycler_view);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        swipe();
 
         updateUI();
 
@@ -79,8 +96,7 @@ public class EventListFragment extends Fragment {
         SharedPreferences pref = getContext().getSharedPreferences(PREF, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
         String uid = mDB.getUUID(userName, getContext());
-
-        ArrayList<Meetings> meetingsList = mDB.getMeetings(uid, getContext());
+        meetingsList = mDB.getMeetings(uid, getContext());
 
         if (mAdapter == null) {
             mAdapter = new EventAdapter(meetingsList);
@@ -89,6 +105,45 @@ public class EventListFragment extends Fragment {
             mAdapter.setMeetings(meetingsList);
             mAdapter.notifyDataSetChanged();
         }
+    }
+
+    private void swipe() {
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback =
+                new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                final int position = viewHolder.getAdapterPosition();
+                if (direction == ItemTouchHelper.LEFT || direction == ItemTouchHelper.RIGHT) {
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle("Are You Sure")
+                            .setMessage("Do you really want to delete this event ?")
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                    Meetings meeting = meetingsList.get(position);
+                                    meeting.setComplete(true);
+                                    myRef.child(meeting.getId()).setValue(meeting);
+                                    meetingsList.remove(position);
+                                    mRecyclerView.getAdapter().notifyItemRemoved(position);
+                                    Toast.makeText(getActivity(), "Deleted", Toast.LENGTH_SHORT).show();
+                                }})
+                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                    mRecyclerView.getAdapter().notifyDataSetChanged();
+                                }}).show();
+                }
+            }
+
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
 
     public EventAdapter getmAdapter(ArrayList<Meetings> lom){
@@ -172,4 +227,5 @@ public class EventListFragment extends Fragment {
             mMeetings = m;
         }
     }
+
 }

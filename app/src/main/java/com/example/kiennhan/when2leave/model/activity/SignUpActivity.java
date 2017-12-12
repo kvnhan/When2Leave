@@ -12,14 +12,19 @@ import android.widget.EditText;
 
 import com.example.kiennhan.when2leave.model.Account;
 import com.example.kiennhan.when2leave.model.AccountTest;
+import com.example.kiennhan.when2leave.model.activity.wrapper.MapWrapper;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import database.DataBaseHelper;
@@ -214,15 +219,29 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private boolean saveUserInfo(Account account, String Hashpw){
-        SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
-        final SharedPreferences.Editor editor = mypref.edit();
         String id = account.getUid();
-        editor.putString(ACC_UID, id);
+
+        Gson gson = new Gson();
+        MapWrapper wrapper = new MapWrapper();
+        SharedPreferences mypref = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
+        //Get a Serialize HashMap
+        String wrapperStr = mypref.getString(PASSWORD_SAFE, null);
+        wrapper = gson.fromJson(wrapperStr, MapWrapper.class);
+        HashMap<String, String> HtKpi = wrapper.getMyMap();
+        // Put username and hash password in the hashmap
+        HtKpi.put(account.getUserName(), Hashpw);
+        // Set the new map
+        wrapper.setMyMap(HtKpi);
+        String serializedMap = gson.toJson(wrapper);
+        final SharedPreferences.Editor editor = mypref.edit();
+        editor.putString(ACC_UID, serializedMap);
         editor.commit();
+        /*
         SharedPreferences pw = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
         final SharedPreferences.Editor edi = pw.edit();
         edi.putString(PASSWORD_SAFE, Hashpw);
         edi.commit();
+        */
         account.setUid("");
         account.setPassword("");
         myRef.child(id).setValue(account);

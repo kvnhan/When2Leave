@@ -44,6 +44,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 DbSchema.MeetingTable.Cols.DATE_ID + ", " +
                 DbSchema.MeetingTable.Cols.DESTINATION_ID + ", " +
                 DbSchema.MeetingTable.Cols.LOCATION_ID + ", " +
+                DbSchema.MeetingTable.Cols.ISCOMPLETE + ", " +
                 DbSchema.MeetingTable.Cols.TIME_ID + ", " +
                 DbSchema.MeetingTable.Cols.DESCRIPTION +
                 ")"
@@ -244,6 +245,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, meetings.getId());
         values.put(DbSchema.MeetingTable.Cols.TIME_ID, meetings.getTimeOfM0eeting());
         values.put(DbSchema.MeetingTable.Cols.UID, account.getUid());
+        values.put(DbSchema.MeetingTable.Cols.ISCOMPLETE, "false");
         return values;
     }
 
@@ -358,11 +360,15 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 String eventTime = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TIME_ID));
                 String eventDate = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DATE_ID));
                 String description = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESCRIPTION));
-                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description);
-                //meetingsList.add(newMeeting);
-                DateAndTimeList.add(eventDate + " @" + eventTime);
-                dateAndtimeKey.put(eventDate + " @" + eventTime, eventID);
-                meetingKey.put(eventID, newMeeting);
+                String isComplete = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ISCOMPLETE));
+                Boolean isDone = false;
+                if(!isComplete.equals("true")){
+                    Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description, isDone);
+                    //meetingsList.add(newMeeting);
+                    DateAndTimeList.add(eventDate + " @" + eventTime);
+                    dateAndtimeKey.put(eventDate + " @" + eventTime, eventID);
+                    meetingKey.put(eventID, newMeeting);
+                }
                 cursor.moveToNext();
             }
         } finally {
@@ -417,13 +423,19 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 String eventTime = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.TIME_ID));
                 String eventDate = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DATE_ID));
                 String description = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESCRIPTION));
-                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description);
+                String isComplete = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ISCOMPLETE));
+                Boolean isDone = false;
+                if(isComplete.equals("true")){
+                    isDone = true;
+                }
+                Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description, isDone);
                 //meetingsList.add(newMeeting);
                 DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
                 Date startDate=null;
-                String newDateString = null;
                 startDate = df.parse(eventDate);
-                if(startDate.getDate() >= firstday && startDate.getDate() <= lastday) {
+                Calendar todayDate = Calendar.getInstance();
+                todayDate.setTime(startDate);
+                if(todayDate.get(Calendar.DAY_OF_MONTH) >= firstday && todayDate.get(Calendar.DAY_OF_MONTH) <= lastday) {
                     DateAndTimeList.add(eventDate + " @" + eventTime);
                     dateAndtimeKey.put(eventDate + " @" + eventTime, eventID);
                     meetingKey.put(eventID, newMeeting);
@@ -467,6 +479,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(DbSchema.MeetingTable.Cols.TIME_ID, updatedMeeting.getTimeOfM0eeting());
         values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, updatedMeeting.getDestination());
         values.put(DbSchema.MeetingTable.Cols.DESCRIPTION, updatedMeeting.getDescription());
+        values.put(DbSchema.MeetingTable.Cols.ISCOMPLETE, "false");
         int ret = mDatabase.update(DbSchema.MeetingTable.NAME, values,
                 DbSchema.MeetingTable.Cols.ID + "=?",
                 new String[]{updatedMeeting.getId()});

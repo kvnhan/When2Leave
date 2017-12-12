@@ -13,6 +13,7 @@ public class DbSchema {
             public static final String LOCATION_ID = "location";
             public static final String TIME_ID = "time";
             public static final String DESCRIPTION = "description";
+            public static final String ISCOMPLETE = "iscomplete";
         }
     }
 
