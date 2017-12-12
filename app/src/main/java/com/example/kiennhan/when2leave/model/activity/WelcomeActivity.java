@@ -62,6 +62,8 @@ public class WelcomeActivity extends AppCompatActivity {
     private static final String TIME = "time";
     private static final String DATE = "date";
     private static final String DESC = "description";
+    private static final String MEETING_ID = "meetingid";
+
 
 
     @Override
@@ -248,6 +250,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 intent.putExtra(TIME, time);
                 intent.putExtra(DATE, date);
                 intent.putExtra(DESC, desc);
+                intent.putExtra(MEETING_ID, meeting.getId());
                 startActivity(intent);
             }
         });

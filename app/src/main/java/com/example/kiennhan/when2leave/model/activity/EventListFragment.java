@@ -31,6 +31,7 @@ public class EventListFragment extends Fragment {
     private static final String TIME = "time";
     private static final String DATE = "date";
     private static final String DESC = "description";
+    private static final String MEETING_ID = "meetingid";
 
     private RecyclerView mRecyclerView;
     private EventAdapter mAdapter;
@@ -145,6 +146,7 @@ public class EventListFragment extends Fragment {
                 intent.putExtra(TIME, time);
                 intent.putExtra(DATE, date);
                 intent.putExtra(DESC, desc);
+                intent.putExtra(MEETING_ID, meeting.getId());
                 startActivity(intent);
             }
         }

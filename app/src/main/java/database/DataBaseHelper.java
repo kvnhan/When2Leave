@@ -458,4 +458,19 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
         return meetingsList;
     }
+
+    public void updateEvent(Context context, Meetings updatedMeeting){
+        mDatabase = new DataBaseHelper(context).getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DbSchema.MeetingTable.Cols.TITLE, updatedMeeting.getTitle());
+        values.put(DbSchema.MeetingTable.Cols.DATE_ID, updatedMeeting.getDateOfMeeting());
+        values.put(DbSchema.MeetingTable.Cols.TIME_ID, updatedMeeting.getTimeOfM0eeting());
+        values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, updatedMeeting.getDestination());
+        values.put(DbSchema.MeetingTable.Cols.DESCRIPTION, updatedMeeting.getDescription());
+        int ret = mDatabase.update(DbSchema.MeetingTable.NAME, values,
+                DbSchema.MeetingTable.Cols.ID + "=?",
+                new String[]{updatedMeeting.getId()});
+
+        mDatabase.close();
+    }
 }

@@ -61,6 +61,7 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
     String timeOfmeeting;
     DataBaseHelper mDB;
     String event_Location = "";
+    String eventName, meetingID;
 
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
@@ -74,6 +75,16 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
     private static final String DATE_KEY = "DATE_KEY";
     private static final String LOCATION = "LOCATION";
 
+    private static final String EVENTNAME = "eventname";
+    private static final String LOCATIN = "location";
+    private static final String TIME = "time";
+    private static final String DATE = "date";
+    private static final String DESC = "description";
+    private static final String MEETING_ID = "meetingid";
+
+
+    private static final String MY_PREF = "myPref";
+    private static final String TWO_CLICK = "twoclick";
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -87,9 +98,11 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
+
+        mDB = new DataBaseHelper(getApplicationContext());
 
         mEventName = findViewById(R.id.eventName);
 
@@ -177,25 +190,50 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
             }
         });
 
-        // API KEY AIzaSyDDLeXTz5oZaZA2F1N7NIY_sLqhUhzA3Ok
+        String id = "";
+
         mCreateEvent = findViewById(R.id.createEvent);
+        final Intent intent = getIntent();
+        if(intent.getIntExtra(TWO_CLICK, 0) == 1){
+            mCreateEvent.setText("Update Event");
+            eventName = intent.getStringExtra(EVENTNAME);
+            event_Location = intent.getStringExtra(LOCATIN);
+            timeOfmeeting = intent.getStringExtra(TIME);
+            dateOfMeeting = intent.getStringExtra(DATE);
+            String desc = intent.getStringExtra(DESC);
+            id = intent.getStringExtra(MEETING_ID);
+
+            mEventName.setText(eventName);
+            mLocation.setText(event_Location);
+            mTime.setText(timeOfmeeting);
+            mDate.setText(dateOfMeeting);
+            mDescription.setText(desc);
+
+        }
+        final String finalId = id;
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
                 String userName = pref.getString(KEY, null);
-                mDB = new DataBaseHelper(getApplicationContext());
                 Account account = mDB.getAccountWithUserName(getApplicationContext(), userName);
 
-                String meetingID = UUID.randomUUID().toString() + "_" + userName;
-                String eventName = mEventName.getText().toString();
+                meetingID = UUID.randomUUID().toString() + "_" + userName;
+                eventName = mEventName.getText().toString();
                 boolean isReady = checkField(eventName);
                 if(isReady) {
-                    Meetings meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
-                    mDB.addMeeting(getApplicationContext(), account, meeting);
-                    Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
-                    startActivity(intent);
+                    if(intent.getIntExtra(TWO_CLICK, 0) == 1){
+                        Meetings meeting = new Meetings(finalId, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
+                        mDB.updateEvent(getApplicationContext(), meeting);
+                        Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
+                        startActivity(intent);
+                    }else {
+                        Meetings meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString());
+                        mDB.addMeeting(getApplicationContext(), account, meeting);
+                        Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
+                        startActivity(intent);
+                    }
                 }
 
             }
@@ -208,6 +246,7 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
             mDate.setText(savedInstanceState.getString(DATE_KEY));
             mLocation.setText(savedInstanceState.getString(LOCATION));
         }
+
 
     }
 
