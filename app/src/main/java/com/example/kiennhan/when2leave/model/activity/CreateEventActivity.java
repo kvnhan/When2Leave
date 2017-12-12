@@ -6,6 +6,7 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
@@ -67,6 +68,23 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
     int PLACE_PICKER_REQUEST = 1;
     private GoogleApiClient mGoogleApiClient;
 
+    private static final String EVENT_NAME = "EVENT_NAME";
+    private static final String DES = "DES";
+    private static final String TIME_KEY = "TIME_KEY";
+    private static final String DATE_KEY = "DATE_KEY";
+    private static final String LOCATION = "LOCATION";
+
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString(EVENT_NAME, mEventName.getText().toString());
+        savedInstanceState.putString(DES, mDescription.getText().toString());
+        savedInstanceState.putString(TIME_KEY, mTime.getText().toString());
+        savedInstanceState.putString(DATE_KEY, mDate.getText().toString());
+        savedInstanceState.putString(LOCATION, mLocation.getText().toString());
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,6 +201,14 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
             }
         });
 
+        if(savedInstanceState != null){
+            mEventName.setText(savedInstanceState.getString(EVENT_NAME));
+            mDescription.setText(savedInstanceState.getString(DES));
+            mTime.setText(savedInstanceState.getString(TIME_KEY));
+            mDate.setText(savedInstanceState.getString(DATE_KEY));
+            mLocation.setText(savedInstanceState.getString(LOCATION));
+        }
+
     }
 
     public boolean checkField(String name){
@@ -226,8 +252,6 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                 Place place = getPlace(CreateEventActivity.this, data);
                 event_Location = String.valueOf(place.getAddress());
                 mLocation.setText(event_Location);
-                String toastMsg = String.format("Place: %s", place.getName());
-                Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
             }
         }
     }

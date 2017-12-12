@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -65,7 +66,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private boolean accExist = false;
     private TextView mRegister;
-
+    private String email;
+    private String password;
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
 
@@ -94,6 +96,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private static final String PASSWORD_SAFE = "passwordsafe";
     private static final String PW = "peace";
     private Boolean listenerCompleted = false;
+    private static final String USER_NAME_SAVE = "passwordsafe";
+    private static final String PASSWORD_SAVE = "passwordsafe";
 
 
     @Override
@@ -137,8 +141,19 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 startActivity(intent);
             }
         });
+
+        if (savedInstanceState != null){
+            email = savedInstanceState.getString(USER_NAME_SAVE);
+            mEmailView.setText(email);
+        }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString(USER_NAME_SAVE, mEmailView.getText().toString());
+
+    }
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
             return;
@@ -199,8 +214,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        email = mEmailView.getText().toString();
+        password = mPasswordView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;

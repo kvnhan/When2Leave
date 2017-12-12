@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.example.kiennhan.when2leave.model.activity.WelcomeActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
+
+    <android.support.v4.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/my_toolbar"
+        android:fitsSystemWindows="false">
+
+        <ListView
+            android:id="@+id/navList"
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="#ffeeeeee"
+            android:fitsSystemWindows="false" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimaryDark"
+            tools:context="com.example.kiennhan.when2leave.model.activity.WelcomeActivity">
+
+            <TextView
+                android:id="@+id/welcome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_centerInParent="false"
+                android:gravity="center"
+                android:paddingBottom="40dp"
+                android:paddingTop="25dp"
+                android:text="@string/Welcome"
+                android:textColor="@android:color/background_light"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/welcome"
+                android:layout_centerHorizontal="true"
+                android:background="@color/place_autocomplete_search_hint"
+                android:gravity="center"
+                android:text="Weekly Events"
+                android:textSize="18sp" />
+
+            <RelativeLayout
+                android:id="@+id/container"
+                android:layout_width="250dp"
+                android:layout_height="300dp"
+                android:layout_alignParentBottom="false"
+                android:layout_below="@+id/textView6"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="53dp">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/daily_event"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerInParent="false"
+                    android:background="@android:color/background_light">
+
+                </android.support.v7.widget.RecyclerView>
+            </RelativeLayout>
+        </RelativeLayout>
+
+    </android.support.v4.widget.DrawerLayout>
+
+</LinearLayout>

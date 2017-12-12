@@ -42,7 +42,8 @@
         </activity>
         <activity
             android:name=".WelcomeActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+           />
         <activity
             android:name=".CreateEventActivity"
             android:label="@string/CreateEvent"

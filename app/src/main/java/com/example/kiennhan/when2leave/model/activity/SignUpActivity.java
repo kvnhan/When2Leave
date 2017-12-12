@@ -2,6 +2,7 @@ package com.example.kiennhan.when2leave.model.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -49,6 +50,12 @@ public class SignUpActivity extends AppCompatActivity {
     private static final String PASSWORD_SAFE = "passwordsafe";
     private static final String PW = "peace";
 
+    private static final String USER_NAME_KEY= "USER_NAME_KEY";
+    private static final String FIRST_NAME_KEY = "FIRST_NAME_KEY";
+    private static final String LAST_NAME_KEY = "LAST_NAME_KEY";
+    private static final String EMAIL_KEY = "EMAIL_KEY";
+    private static final String PHONE_NUM_KEY = "PHONE_NUM_KEY";
+
     private boolean passwordValid = true;
     private boolean passwordMatch = true;
 
@@ -74,6 +81,13 @@ public class SignUpActivity extends AppCompatActivity {
 
         myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
 
+        if(savedInstanceState != null){
+            mFirstName.setText(savedInstanceState.getString(FIRST_NAME_KEY));
+            mLastName.setText(savedInstanceState.getString(LAST_NAME_KEY));
+            mUserName.setText(savedInstanceState.getString(USER_NAME_KEY));
+            mEmailAddress.setText(savedInstanceState.getString(EMAIL_KEY));
+            mPhoneNumber.setText(savedInstanceState.getString(PHONE_NUM_KEY));
+        }
         mCreateAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -132,6 +146,17 @@ public class SignUpActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString(USER_NAME_KEY, mUserName.getText().toString());
+        savedInstanceState.putString(FIRST_NAME_KEY, mFirstName.getText().toString());
+        savedInstanceState.putString(LAST_NAME_KEY, mLastName.getText().toString());
+        savedInstanceState.putString(PHONE_NUM_KEY, mPhoneNumber.getText().toString());
+        savedInstanceState.putString(EMAIL_KEY, mEmailAddress.getText().toString());
+
     }
 
     public boolean checkField(String firstname, String lastname, String username, String password, String cpassword, String email){
