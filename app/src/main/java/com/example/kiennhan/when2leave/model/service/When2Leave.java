@@ -61,6 +61,7 @@ public class When2Leave extends JobService {
                             .setContentTitle("When2Leave")
                             .setContentIntent(resultPendingIntent)
                             .setDefaults(Notification.DEFAULT_SOUND)
+                            .setAutoCancel(true)
                             .setContentText("You Should Leave for Your Meeting");
 
             int mNotificationId = 001;
