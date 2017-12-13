@@ -1,5 +1,6 @@
 package com.example.kiennhan.when2leave.model.service;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -7,6 +8,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.IBinder;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
@@ -18,11 +20,27 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.kiennhan.when2leave.model.Meetings;
+import com.example.kiennhan.when2leave.model.activity.CreateEventActivity;
 import com.example.kiennhan.when2leave.model.activity.R;
 import com.example.kiennhan.when2leave.model.activity.ViewEventActivity;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.PlaceLikelihood;
+import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import database.DataBaseHelper;
 
@@ -41,7 +60,8 @@ public class When2Leave extends JobService {
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
 
-
+    private GoogleApiClient mGoogleApiClient;
+    private FusedLocationProviderClient mFusedLocationClient;
 
     DataBaseHelper mDB;
 
@@ -106,9 +126,13 @@ public class When2Leave extends JobService {
             jobFinished(params, false);
         }
 
+        @SuppressLint("MissingPermission")
         @Override
         protected Void doInBackground(Void... params) {
             //TODO: Get current location, calculate distance time to a list of meetings retrieved from database, including traffic,etc....
+
+            Meetings meeting;
+
 
             // Get a list of weekly events
             mDB = new DataBaseHelper(When2Leave.this);
@@ -132,6 +156,7 @@ public class When2Leave extends JobService {
 
                     //if the current time is before the next upcoming meeting
                     if (new Date().before(d)) {
+                        meeting = m;
                         Log.i("tester", "next meeting: " + m.getTitle());
                         break;
                     }
@@ -140,15 +165,64 @@ public class When2Leave extends JobService {
                 }
             }
 
-            // Compare meeting time to current time, if close get the distance, duration, and arrival time
+            if (mGoogleApiClient == null) {
+                mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                        .addApi(LocationServices.API)
+                        .addApi(Places.GEO_DATA_API)
+                        .addApi(Places.PLACE_DETECTION_API)
+                        .build();
+                mGoogleApiClient.connect();
+                Log.i("tester", "got location");
 
-//            ArrayList<Meetings> leavingList = new ArrayList<Meetings>();
-//            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(When2Leave.this);
-//            SharedPreferences.Editor editor = sharedPrefs.edit();
-//            Gson gson = new Gson();
-//            String json = gson.toJson(leavingList);
-//            editor.putString(LIST, json);
-//            editor.commit();
+                @SuppressLint("MissingPermission") PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
+                        .getCurrentPlace(mGoogleApiClient, null);
+                result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
+                    @Override
+                    public void onResult(PlaceLikelihoodBuffer placeLikelihoods) {
+
+                        PlaceLikelihood place = placeLikelihoods.get(0);
+                        Log.i("tester", String.format("Place '%s' has lat: %g and long: %g",
+                                place.getPlace().getName(),
+                                place.getPlace().getLatLng().latitude,
+                                place.getPlace().getLatLng().longitude));
+
+                        placeLikelihoods.release();
+
+                        getArrivalTime();
+                    }
+
+                    //make the request to get the time to travel to the next meeting
+                    public void getArrivalTime() {
+                        URL url = null;
+                        try {
+                            url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Disneyland&destination=Universal+Studios+Hollywood4&key=AIzaSyBbWG82CGJS1t6RT5DoCV5cjKV8cHrLHNk");
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                            try {
+                                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+
+                                int data = in.read();
+                                String str = "";
+                                while (data != -1) {
+                                    str += (char) data;
+                                    data = in.read();
+                                }
+                                in.close();
+                                Log.i("tester", str);
+                            } finally {
+                                urlConnection.disconnect();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+
+
 
             Log.i("tester", "DOING BACKGROUND WORK");
             return null;
