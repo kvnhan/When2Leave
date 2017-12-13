@@ -34,6 +34,10 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -236,6 +240,16 @@ public class When2Leave extends JobService {
                         }
                         in.close();
                         Log.i("tester", str);
+
+                        try {
+                            JSONObject directions = new JSONObject(str);
+                            int seconds = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("duration").getInt("value");
+
+                            Log.i("tester", seconds+" seconds");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
                     } finally {
                         urlConnection.disconnect();
                     }
