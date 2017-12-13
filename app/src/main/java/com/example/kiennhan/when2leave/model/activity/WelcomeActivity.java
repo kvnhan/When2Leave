@@ -5,8 +5,14 @@ import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.location.Location;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -30,8 +36,19 @@ import com.example.kiennhan.when2leave.model.Meetings;
 import com.example.kiennhan.when2leave.model.OnItemClickListener;
 import com.example.kiennhan.when2leave.model.adapter.DailyEventAdapter;
 import com.example.kiennhan.when2leave.model.service.When2Leave;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.places.PlaceDetectionClient;
+import com.google.android.gms.location.places.PlaceLikelihood;
+import com.google.android.gms.location.places.PlaceLikelihoodBufferResponse;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 
 import database.DataBaseHelper;
 
@@ -64,6 +81,17 @@ public class WelcomeActivity extends AppCompatActivity {
     private static final String DESC = "description";
     private static final String MEETING_ID = "meetingid";
 
+    private static final String CURR_LOCATION = "current";
+    private static final String SAVE_LOCATION = "saveloc";
+    private PlaceDetectionClient mPlaceDetectionClient;
+
+    // The entry point to the Fused Location Provider.
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private boolean mLocationPermissionGranted;
+
+    // The geographical location where the device is currently located. That is, the last-known
+    // location retrieved by the Fused Location Provider.
+    private Location mLastKnownLocation;
 
 
     @Override
@@ -86,6 +114,8 @@ public class WelcomeActivity extends AppCompatActivity {
         int ret = jobScheduler.schedule(jobInfo);
         if (ret == JobScheduler.RESULT_SUCCESS) Log.d("FUCK", "Job scheduled successfully!");
 
+        mPlaceDetectionClient = Places.getPlaceDetectionClient(WelcomeActivity.this, null);
+        guessCurrentPlace();
 
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
@@ -256,4 +286,39 @@ public class WelcomeActivity extends AppCompatActivity {
         });
     }
 
+    public void guessCurrentPlace() {
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            mLocationPermissionGranted = true;
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+            Task<PlaceLikelihoodBufferResponse> placeResult = mPlaceDetectionClient.getCurrentPlace(null);
+            placeResult.addOnCompleteListener(new OnCompleteListener<PlaceLikelihoodBufferResponse>() {
+                @Override
+                public void onComplete(@NonNull Task<PlaceLikelihoodBufferResponse> task) {
+                    ArrayList<Float> currentList = new ArrayList<Float>();
+                    HashMap<Float, com.example.kiennhan.when2leave.model.Location> mapLocation= new HashMap<>();
+                    PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
+                    for (PlaceLikelihood placeLikelihood : likelyPlaces) {
+                        com.example.kiennhan.when2leave.model.Location loc = new com.example.kiennhan.when2leave.model.Location(placeLikelihood.getPlace().getLatLng().longitude,
+                                placeLikelihood.getPlace().getLatLng().latitude);
+                        mapLocation.put(placeLikelihood.getLikelihood(), loc);
+                        currentList.add(placeLikelihood.getLikelihood());
+                    }
+                    Collections.sort(currentList);
+                    int size = currentList.size();
+                    com.example.kiennhan.when2leave.model.Location likelyLocation = mapLocation.get(currentList.get(size - 1));
+                    SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
+                    SharedPreferences.Editor editor = locPref.edit();
+                    Gson gson = new Gson();
+                    String json = gson.toJson(likelyLocation);
+                    editor.putString(SAVE_LOCATION, json);
+                    likelyPlaces.release();
+                }
+            });
+    }
 }
