@@ -355,16 +355,14 @@ public class SignUpActivity extends AppCompatActivity {
     private void checkListenerStatus(String username, Account acc,String hashPw) {
         if (listenerCompleted) {
             if(!accountExist){
-                if (passwordValid && passwordMatch) {
-                    mDB.addAccount(getApplicationContext(), acc, hashPw);
-                    SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
-                    final SharedPreferences.Editor editor = pref.edit();
-                    editor.putString(KEY, username);
-                    editor.commit();
-                    saveUserInfo(acc, hashPw);
-                    Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
-                    startActivity(intent);
-                }
+                mDB.addAccount(getApplicationContext(), acc, hashPw);
+                SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                final SharedPreferences.Editor editor = pref.edit();
+                editor.putString(KEY, username);
+                editor.commit();
+                saveUserInfo(acc, hashPw);
+                Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
+                startActivity(intent);
             }
         }
     }

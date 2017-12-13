@@ -121,16 +121,6 @@ public class WelcomeActivity extends AppCompatActivity {
         myToolbar.setTitle("");
         myToolbar.setSubtitle("");
 
-        JobScheduler jobScheduler = (JobScheduler) getApplicationContext().getSystemService(getApplicationContext().JOB_SCHEDULER_SERVICE);
-        ComponentName componentName = new ComponentName(getApplicationContext(), When2Leave.class);
-        JobInfo jobInfo = new JobInfo.Builder(1, componentName)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .setPeriodic(15 * 60 * 1000)
-                .setPersisted(true)
-                .build();
-        int ret = jobScheduler.schedule(jobInfo);
-        if (ret == JobScheduler.RESULT_SUCCESS) Log.d("FUCK", "Job scheduled successfully!");
-
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mActivityTitle = getTitle().toString();
@@ -170,13 +160,21 @@ public class WelcomeActivity extends AppCompatActivity {
         updateUI();
         clickItem();
 
-        //check for permissions
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    0);
+        if (ContextCompat.checkSelfPermission(WelcomeActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(WelcomeActivity.this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(WelcomeActivity.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 108);
+            }
         }
     }
 
@@ -307,4 +305,24 @@ public class WelcomeActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == 108) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                JobScheduler jobScheduler = (JobScheduler) getApplicationContext().getSystemService(getApplicationContext().JOB_SCHEDULER_SERVICE);
+                ComponentName componentName = new ComponentName(getApplicationContext(), When2Leave.class);
+                JobInfo jobInfo = new JobInfo.Builder(1, componentName)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .setPeriodic(15 * 60 * 1000)
+                        .setPersisted(true)
+                        .build();
+                int ret = jobScheduler.schedule(jobInfo);
+                if (ret == JobScheduler.RESULT_SUCCESS) Log.d("FUCK", "Job scheduled successfully!");
+            } else {
+            }
+            return;
+        }
+    }
 }
