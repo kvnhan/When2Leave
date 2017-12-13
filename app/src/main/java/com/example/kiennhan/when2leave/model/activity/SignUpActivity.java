@@ -361,7 +361,7 @@ public class SignUpActivity extends AppCompatActivity {
                     final SharedPreferences.Editor editor = pref.edit();
                     editor.putString(KEY, username);
                     editor.commit();
-                    //saveUserInfo(acc, hashPw);
+                    saveUserInfo(acc, hashPw);
                     Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
                     startActivity(intent);
                 }
