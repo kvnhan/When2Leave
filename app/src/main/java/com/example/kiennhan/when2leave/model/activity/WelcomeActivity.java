@@ -1,5 +1,6 @@
 package com.example.kiennhan.when2leave.model.activity;
 
+import android.Manifest;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
@@ -8,6 +9,9 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.location.Location;
+import android.os.AsyncTask;
+import android.support.v4.app.ActivityCompat;
 import android.location.Location;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -32,6 +36,18 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 import com.example.kiennhan.when2leave.model.Meetings;
 import com.example.kiennhan.when2leave.model.OnItemClickListener;
 import com.example.kiennhan.when2leave.model.adapter.DailyEventAdapter;
@@ -72,6 +88,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private static final String PREF = "MyPref";
     private boolean onWelcome = false;
 
+    private FusedLocationProviderClient mFusedLocationClient;
     DataBaseHelper mDB;
 
     private static final String EVENTNAME = "eventname";
@@ -133,7 +150,7 @@ public class WelcomeActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
-                    if(!onWelcome) {
+                    if (!onWelcome) {
                         Intent intent = new Intent(WelcomeActivity.this, WelcomeActivity.class);
                         startActivity(intent);
                     }
@@ -151,11 +168,19 @@ public class WelcomeActivity extends AppCompatActivity {
         String userName = pref.getString(KEY, null);
         Resources res = getResources();
         String text = String.format(res.getString(R.string.Welcome), userName);
-        mWelcome = (TextView)findViewById(R.id.welcome);
+        mWelcome = (TextView) findViewById(R.id.welcome);
         mWelcome.setText(text);
         updateUI();
         clickItem();
 
+        //check for permissions
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    0);
+        }
     }
 
     @Override
@@ -272,7 +297,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 Meetings meeting = meetingsList.get(position);
                 String name = meeting.getTitle();
                 String location = meeting.getDestination();
-                String time = meeting.getTimeOfM0eeting();
+                String time = meeting.getTimeOfMeeting();
                 String date = meeting.getDateOfMeeting();
                 String desc = meeting.getDescription();
                 intent.putExtra(EVENTNAME, name);
@@ -324,3 +349,5 @@ public class WelcomeActivity extends AppCompatActivity {
             });
     }
 }
+
+

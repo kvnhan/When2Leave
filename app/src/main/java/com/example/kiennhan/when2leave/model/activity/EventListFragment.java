@@ -180,7 +180,7 @@ public class EventListFragment extends Fragment {
                 mMeeting = meeting;
                 mTitleTextView.setText(mMeeting.getTitle());
                 mDateTextView.setText(mMeeting.getDateOfMeeting());
-                mTimeTextView.setText(mMeeting.getTimeOfM0eeting());
+                mTimeTextView.setText(mMeeting.getTimeOfMeeting());
             }
 
 
@@ -193,7 +193,7 @@ public class EventListFragment extends Fragment {
                 Meetings meeting = mMeetings.get(pos);
                 String name = meeting.getTitle();
                 String location = meeting.getDestination();
-                String time = meeting.getTimeOfM0eeting();
+                String time = meeting.getTimeOfMeeting();
                 String date = meeting.getDateOfMeeting();
                 String desc = meeting.getDescription();
                 intent.putExtra(EVENTNAME, name);

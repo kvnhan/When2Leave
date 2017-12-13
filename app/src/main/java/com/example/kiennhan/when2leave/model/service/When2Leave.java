@@ -1,5 +1,6 @@
 package com.example.kiennhan.when2leave.model.service;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -7,6 +8,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.IBinder;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
@@ -17,8 +19,9 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.kiennhan.when2leave.model.Location;
 import com.example.kiennhan.when2leave.model.Meetings;
+import com.example.kiennhan.when2leave.model.Meetings;
+import com.example.kiennhan.when2leave.model.activity.CreateEventActivity;
 import com.example.kiennhan.when2leave.model.activity.R;
 import com.example.kiennhan.when2leave.model.activity.ViewEventActivity;
 import com.google.gson.Gson;
@@ -36,9 +39,45 @@ import java.util.List;
 import database.DataBaseHelper;
 
 import static android.content.ContentValues.TAG;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.PlaceLikelihood;
+import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Executor;
+
+import database.DataBaseHelper;
+
+import static android.content.ContentValues.TAG;
 
 public class When2Leave extends JobService {
     private  static final String TIME2LEAVE = "time2leave";
+    private GoogleApiClient mGoogleApiClient;
+    private FusedLocationProviderClient mFusedLocationClient;
     private  static final String LIST = "meetinglist";
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
@@ -46,7 +85,7 @@ public class When2Leave extends JobService {
 
 
     DataBaseHelper mDB;
-    private Location currentLocation;
+    private com.example.kiennhan.when2leave.model.Location currentLocation;
     private static final String CURR_LOCATION = "current";
     private static final String SAVE_LOCATION = "saveloc";
 
@@ -68,6 +107,7 @@ public class When2Leave extends JobService {
         }
 
         Log.d("FUCK", "STARTING BACKGROUND WORK");
+        Log.i("tester", "STARTING BACKGROUND WORK");
         new Time2Leave().execute();
         return true;
     }
@@ -82,48 +122,19 @@ public class When2Leave extends JobService {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            //TODO: Post notfication
-
-            /*
-            Get a list of upcoming meetings and create notification for ea
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(When2Leave.this);
-            Gson gson = new Gson();
-            String json = sharedPrefs.getString(LIST, null);
-            Type type = new TypeToken<ArrayList<Meetings>>() {}.getType();
-            ArrayList<Meetings> arrayList = gson.fromJson(json, type);
-            */
-            Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
-                            When2Leave.this,
-                            0,
-                            resultIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                    );
-
-            NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(When2Leave.this, TIME2LEAVE)
-                            .setSmallIcon(R.drawable.ic_launcher_background)
-                            .setTicker("TIME TO LEAVE!!!")
-                            .setContentTitle("When2Leave")
-                            .setContentIntent(resultPendingIntent)
-                            .setDefaults(Notification.DEFAULT_SOUND)
-                            .setAutoCancel(true)
-                            .setContentText("You Should Leave for Your Meeting");
-
-            int mNotificationId = 001;
-            NotificationManager mNotifyMgr =
-                    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            mNotifyMgr.notify(mNotificationId, mBuilder.build());
-
-            Log.d("FUCK", "FINISH WORK");
+            Log.i("tester", "FINISH WORK");
             jobFinished(params, false);
         }
 
+        @SuppressLint("MissingPermission")
         @Override
         protected Void doInBackground(Void... params) {
             //TODO: Get current location, calculate distance time to a list of meetings retrieved from database, including traffic,etc....
-/*
+
+            Meetings meeting = null;
+            Date date = null;
+
+
             // Get a list of weekly events
             mDB = new DataBaseHelper(When2Leave.this);
             SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
@@ -131,20 +142,153 @@ public class When2Leave extends JobService {
             String uid = mDB.getUUID(userName, When2Leave.this);
             ArrayList<Meetings> meetingsList = mDB.getWeeklyMeetings(uid, getApplicationContext());
 
+            //select the next upcoming meeting
+            for(Meetings m: meetingsList) {
+                String dateTime = m.getDateOfMeeting() + " " + m.getTimeOfMeeting();
+                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+                try {
+                    date = sdf.parse(dateTime);
 
-                Compare meeting time to current time, if close get the distance, duration, and arrival time
+                    //if the current time is before the next upcoming meeting
+                    if (new Date().before(date)) {
+                        meeting = m;
+                        break;
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
 
-            ArrayList<Meetings> leavingList = new ArrayList<Meetings>();
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(When2Leave.this);
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            Gson gson = new Gson();
-            String json = gson.toJson(leavingList);
-            editor.putString(LIST, json);
-            editor.commit();
-*/
-            Log.d("FUCK", "DOING BACKGROUND WORK");
+            //get the current location
+            if (mGoogleApiClient == null) {
+                mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                        .addApi(LocationServices.API)
+                        .addApi(Places.GEO_DATA_API)
+                        .addApi(Places.PLACE_DETECTION_API)
+                        .build();
+            }
+                mGoogleApiClient.connect();
+
+
+                @SuppressLint("MissingPermission") PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
+                        .getCurrentPlace(mGoogleApiClient, null);
+                final Meetings finalMeeting = meeting;
+                final Date finalDate = date;
+                result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
+
+                    @Override
+                    public void onResult(PlaceLikelihoodBuffer placeLikelihoods) {
+
+                        PlaceLikelihood place = placeLikelihoods.get(0);
+                        String placeID = place.getPlace().getId();
+
+                        placeLikelihoods.release();
+
+
+                        if(finalMeeting != null) {
+                            new getDirectionsTask(finalMeeting, finalDate, placeID).execute();
+                        }
+
+                    }
+                });
+
+
+
+            Log.i("tester", "DOING BACKGROUND WORK");
             return null;
         }
+
+        private class getDirectionsTask extends AsyncTask<Void, Void, Void> {
+
+            Meetings meeting;
+            Date date;
+            String placeID;
+
+            getDirectionsTask(Meetings meeting, Date date, String placeID) {
+                this.meeting = meeting;
+                this.date = date;
+                this.placeID = placeID;
+            }
+
+            //get the directions to the location
+            @Override
+            protected Void doInBackground(Void... voids) {
+                URL url = null;
+                String origin = placeID;
+                String destination = meeting.getDestination().replaceAll(" ", "+");
+                String key = "AIzaSyBbWG82CGJS1t6RT5DoCV5cjKV8cHrLHNk";
+                String arrivalTime = date.getTime()+"";
+                try {
+                    url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=place_id:"+origin+"&destination="+destination+"&arrival_time="+arrivalTime+"&key="+key);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    try {
+                        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+
+                        int data = in.read();
+                        String str = "";
+                        while (data != -1) {
+                            str += (char) data;
+                            data = in.read();
+                        }
+                        in.close();
+                        Log.i("tester", str);
+
+                        //parse the JSON reply
+                        try {
+                            JSONObject directions = new JSONObject(str);
+                            int travelSeconds = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("duration").getInt("value");
+
+                            Log.i("tester", travelSeconds+" seconds to arrive");
+
+                            //show the notification if it's time to leave
+                            long timeDiff = (date.getTime()-new Date().getTime()) / 1000;
+                            long leftoverTime = timeDiff-travelSeconds;
+                            Log.i("tester", leftoverTime+" seconds leftover");
+                            if(leftoverTime < 60*15) {
+                                Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
+                                PendingIntent resultPendingIntent =
+                                        PendingIntent.getActivity(
+                                                When2Leave.this,
+                                                0,
+                                                resultIntent,
+                                                PendingIntent.FLAG_UPDATE_CURRENT
+                                        );
+
+                                NotificationCompat.Builder mBuilder =
+                                        new NotificationCompat.Builder(When2Leave.this, TIME2LEAVE)
+                                                .setSmallIcon(R.drawable.ic_launcher_background)
+                                                .setTicker("TIME TO LEAVE!!!")
+                                                .setContentTitle("When2Leave")
+                                                .setContentIntent(resultPendingIntent)
+                                                .setDefaults(Notification.DEFAULT_SOUND)
+                                                .setAutoCancel(true)
+                                                .setContentText("Leave now for " + meeting.getTitle());
+
+                                int mNotificationId = 001;
+                                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                                mNotifyMgr.notify(mNotificationId, mBuilder.build());
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    } finally {
+                        urlConnection.disconnect();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                return null;
+            }
+        }
+
     }
 
     public ArrayList<Meetings> timeToLeave(ArrayList<Meetings> lom) throws ParseException {
@@ -164,8 +308,8 @@ public class When2Leave extends JobService {
             Date startDate =  df.parse(m.getDateOfMeeting());
             Calendar todayDate = Calendar.getInstance();
             todayDate.setTime(startDate);
-            if(todayDate.get(Calendar.DAY_OF_MONTH) == mDay && todayDate.get(Calendar.MONTH)  == mMonth){
-                //TODO: Compare current hour to arrrival Time
+            if(todayDate.get(Calendar.DAY_OF_MONTH) == mDay && todayDate.get(Calendar.MONTH) == mMonth){
+                //TODO: Compare current hour to arrival Time
             }
 
         }
@@ -173,9 +317,3 @@ public class When2Leave extends JobService {
         return leavingList;
     }
 }
-
-
-
-
-
-

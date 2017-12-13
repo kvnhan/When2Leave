@@ -9,7 +9,7 @@ public class Meetings {
     private String id;
     private String title;
     private Account account;
-    private String timeOfM0eeting;
+    private String timeOfMeeting;
     private String dateOfMeeting;
     private String userLocation;
     private String destination;
@@ -21,7 +21,7 @@ public class Meetings {
         this.id = id;
         this.title = title;
         this.account = account;
-        this.timeOfM0eeting = timeOfM0eeting;
+        this.timeOfMeeting = timeOfM0eeting;
         this.dateOfMeeting = dateOfMeeting;
         this.userLocation = userLocation;
         this.destination = destination;
@@ -60,12 +60,12 @@ public class Meetings {
         this.account = account;
     }
 
-    public String getTimeOfM0eeting() {
-        return timeOfM0eeting;
+    public String getTimeOfMeeting() {
+        return timeOfMeeting;
     }
 
-    public void setTimeOfM0eeting(String timeOfM0eeting) {
-        this.timeOfM0eeting = timeOfM0eeting;
+    public void setTimeOfMeeting(String timeOfM0eeting) {
+        this.timeOfMeeting = timeOfM0eeting;
     }
 
     public String getDateOfMeeting() {

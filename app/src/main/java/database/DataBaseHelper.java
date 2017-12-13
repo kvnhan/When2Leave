@@ -243,7 +243,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(DbSchema.MeetingTable.Cols.DESTINATION_ID, meetings.getDestination());
         values.put(DbSchema.MeetingTable.Cols.TITLE, meetings.getTitle());
         values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, meetings.getId());
-        values.put(DbSchema.MeetingTable.Cols.TIME_ID, meetings.getTimeOfM0eeting());
+        values.put(DbSchema.MeetingTable.Cols.TIME_ID, meetings.getTimeOfMeeting());
         values.put(DbSchema.MeetingTable.Cols.UID, account.getUid());
         values.put(DbSchema.MeetingTable.Cols.ISCOMPLETE, "false");
         return values;
