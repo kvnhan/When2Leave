@@ -318,6 +318,7 @@ public class WelcomeActivity extends AppCompatActivity {
                     Gson gson = new Gson();
                     String json = gson.toJson(likelyLocation);
                     editor.putString(SAVE_LOCATION, json);
+                    editor.commit();
                     likelyPlaces.release();
                 }
             });

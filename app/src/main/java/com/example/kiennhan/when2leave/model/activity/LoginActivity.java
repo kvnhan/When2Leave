@@ -1,5 +1,7 @@
 package com.example.kiennhan.when2leave.model.activity;
 
+import android.*;
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -24,6 +26,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -56,6 +59,7 @@ import com.google.gson.Gson;
 import database.DataBaseHelper;
 
 import static android.Manifest.permission.READ_CONTACTS;
+import static android.support.v4.content.PermissionChecker.checkSelfPermission;
 
 /**
  * A login screen that offers login via email/password.
@@ -66,6 +70,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
+    private static final int REQUEST_LOCATION_FINE = 1;
+    private static final int REQUEST_LOCATION_COARSE = 1;
+
 
     private boolean accExist = false;
     private TextView mRegister;
@@ -113,6 +120,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
+        requestLocationService();
         myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
 
         mPasswordView = (EditText) findViewById(R.id.password);
@@ -189,6 +197,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         return false;
     }
 
+    private void requestLocationService(){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+                String[] permissions = {android.Manifest.permission.ACCESS_FINE_LOCATION};
+                requestPermissions(permissions, REQUEST_LOCATION_FINE);
+            }
+            if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+                String[] permissions = {android.Manifest.permission.ACCESS_COARSE_LOCATION};
+                requestPermissions(permissions, REQUEST_LOCATION_COARSE);
+            }
+        }
+    }
     /**
      * Callback received when a permissions request has been completed.
      */
