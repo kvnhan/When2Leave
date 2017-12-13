@@ -141,14 +141,8 @@ public class When2Leave extends JobService {
             String userName = pref.getString(KEY, null);
             String uid = mDB.getUUID(userName, When2Leave.this);
             ArrayList<Meetings> meetingsList = mDB.getWeeklyMeetings(uid, getApplicationContext());
-            Log.i("tester", meetingsList.size()+" meetings");
-            for(Meetings m: meetingsList){
-                Log.i("tester", "   "+m.getTitle());
-            }
 
             //select the next upcoming meeting
-            String time = DateFormat.getDateTimeInstance().format(new Date());
-            Log.i("tester", time);
             for(Meetings m: meetingsList) {
                 String dateTime = m.getDateOfMeeting() + " " + m.getTimeOfMeeting();
                 SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm");
@@ -158,7 +152,6 @@ public class When2Leave extends JobService {
                     //if the current time is before the next upcoming meeting
                     if (new Date().before(date)) {
                         meeting = m;
-                        Log.i("tester", "next meeting: " + m.getTitle());
                         break;
                     }
                 } catch (ParseException e) {
@@ -166,6 +159,7 @@ public class When2Leave extends JobService {
                 }
             }
 
+            //get the current location
             if (mGoogleApiClient == null) {
                 mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                         .addApi(LocationServices.API)
@@ -187,20 +181,11 @@ public class When2Leave extends JobService {
 
                         PlaceLikelihood place = placeLikelihoods.get(0);
                         String placeID = place.getPlace().getId();
-                        Log.i("tester", String.format("Place '%s' has lat: %g and long: %g",
-                                place.getPlace().getName(),
-                                place.getPlace().getLatLng().latitude,
-                                place.getPlace().getLatLng().longitude));
-                        Log.i("tester", place.getPlace().getId());
 
                         placeLikelihoods.release();
 
 
                         if(finalMeeting != null) {
-                            Log.i("tester", "next meeting name: " + finalMeeting.getTitle());
-                            Log.i("tester", "next meeting dateTime: " + finalDate.getTime());
-                            Log.i("tester", "next meeting location: " + finalMeeting.getDestination());
-                            Log.i("tester", finalMeeting.getDestination().replaceAll(" ", "+"));
                             new getDirectionsTask(finalMeeting, finalDate, placeID).execute();
                         }
 
@@ -225,6 +210,7 @@ public class When2Leave extends JobService {
                 this.placeID = placeID;
             }
 
+            //get the directions to the location
             @Override
             protected Void doInBackground(Void... voids) {
                 URL url = null;

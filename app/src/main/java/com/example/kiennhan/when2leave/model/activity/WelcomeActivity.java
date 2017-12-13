@@ -73,7 +73,6 @@ public class WelcomeActivity extends AppCompatActivity {
     private boolean onWelcome = false;
 
     private FusedLocationProviderClient mFusedLocationClient;
-    private getDirectionsTask mGetDirectionsTask;
     DataBaseHelper mDB;
 
     private static final String EVENTNAME = "eventname";
@@ -149,26 +148,6 @@ public class WelcomeActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     0);
-        }
-        else {
-            mFusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            if (location != null) {
-                                Toast toast = Toast.makeText(getApplicationContext(), "location got", Toast.LENGTH_SHORT);
-                                toast.show();
-
-                                try {
-                                    URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Disneyland&destination=Universal+Studios+Hollywood4&key=AIzaSyBbWG82CGJS1t6RT5DoCV5cjKV8cHrLHNk");
-                                    mGetDirectionsTask = new getDirectionsTask(url);
-//                                    mGetDirectionsTask.execute();
-                                } catch (MalformedURLException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    });
         }
     }
 
@@ -247,41 +226,6 @@ public class WelcomeActivity extends AppCompatActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
-    }
-
-    private class getDirectionsTask extends AsyncTask<Void, Void, Void> {
-
-        private URL mURL;
-
-        getDirectionsTask(URL url) {
-            mURL = url;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            try {
-                HttpURLConnection urlConnection = (HttpURLConnection) mURL.openConnection();
-                try {
-                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                    int data = in.read();
-                    String str = "";
-                    while (data != -1) {
-                        str += (char) data;
-                        data = in.read();
-                    }
-                    in.close();
-                    Log.i("tester", str);
-                } finally {
-                    urlConnection.disconnect();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-            return null;
-        }
     }
 
     private void updateUI() {
