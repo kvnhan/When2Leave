@@ -67,6 +67,7 @@ public class SignUpActivity extends AppCompatActivity {
     private boolean passwordMatch = true;
 
     private Boolean listenerCompleted = false;
+    private Boolean signUpComplete = false;
     SharedPreferences pref = null;
 
     @Override
@@ -145,19 +146,9 @@ public class SignUpActivity extends AppCompatActivity {
                     focusView2.requestFocus();
                     passwordMatch = false;
                 }
-
-                if(pref.getBoolean(FIRSTRUN, true)){
-                    pref.edit().putBoolean(FIRSTRUN, false).commit();
-                    mDB.addAccount(getApplicationContext(), newAccount, hashPassord);
-                    SharedPreferences mypref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
-                    final SharedPreferences.Editor editor = mypref.edit();
-                    editor.putString(KEY, userName);
-                    editor.commit();
-                    saveUserInfo(newAccount, hashPassord);
-                    Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
-                    startActivity(intent);
+                if(passwordMatch && passwordValid) {
+                    attemptLogin(newAccount, userName, emailAddress, hashPassord);
                 }
-                attemptLogin(newAccount, userName, emailAddress, hashPassord);
 
             }
         });
@@ -266,45 +257,50 @@ public class SignUpActivity extends AppCompatActivity {
         myRef.addListenerForSingleValueEvent((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Iterable<DataSnapshot> children = dataSnapshot.getChildren();
-                mUserName.setError(null);
-                mEmailAddress.setError(null);
-                for (DataSnapshot child : children) {
-                    AccountTest acoount = child.getValue(AccountTest.class);
-                    if (acoount.getUserName().equals(username) && acoount.getEmail().equals(email)) {
-                        View focusView = null;
-                        View focusView2 = null;
-                        mUserName.setError(getString(R.string.UsedUsername));
-                        mEmailAddress.setError("You have already signed up with this email address");
-                        focusView = mUserName;
-                        focusView2 = mEmailAddress;
-                        focusView.requestFocus();
-                        focusView2.requestFocus();
-                        listenerCompleted = true;
-                        accountExist = true;
-                        break;
-                    } else if (acoount.getUserName().equals(username)) {
-                        View focusView = null;
-                        mUserName.setError(getString(R.string.UsedUsername));
-                        focusView = mUserName;
-                        focusView.requestFocus();
-                        listenerCompleted = true;
-                        accountExist = true;
-                        break;
-                    } else if (acoount.getEmail().equals(email)) {
-                        View focusView2 = null;
-                        mEmailAddress.setError("You have already signed up with this email address");
-                        focusView2 = mEmailAddress;
-                        focusView2.requestFocus();
-                        listenerCompleted = true;
-                        accountExist = true;
-                        break;
-                    }else {
-                        listenerCompleted = true;
-                        accountExist = false;
+                if (dataSnapshot.exists()) {
+                    Iterable<DataSnapshot> children = dataSnapshot.getChildren();
+                    mUserName.setError(null);
+                    mEmailAddress.setError(null);
+                    for (DataSnapshot child : children) {
+                        AccountTest acoount = child.getValue(AccountTest.class);
+                        if (acoount.getUserName().equals(username) && acoount.getEmail().equals(email)) {
+                            View focusView = null;
+                            View focusView2 = null;
+                            mUserName.setError(getString(R.string.UsedUsername));
+                            mEmailAddress.setError("You have already signed up with this email address");
+                            focusView = mUserName;
+                            focusView2 = mEmailAddress;
+                            focusView.requestFocus();
+                            focusView2.requestFocus();
+                            listenerCompleted = true;
+                            accountExist = true;
+                            break;
+                        } else if (acoount.getUserName().equals(username)) {
+                            View focusView = null;
+                            mUserName.setError(getString(R.string.UsedUsername));
+                            focusView = mUserName;
+                            focusView.requestFocus();
+                            listenerCompleted = true;
+                            accountExist = true;
+                            break;
+                        } else if (acoount.getEmail().equals(email)) {
+                            View focusView2 = null;
+                            mEmailAddress.setError("You have already signed up with this email address");
+                            focusView2 = mEmailAddress;
+                            focusView2.requestFocus();
+                            listenerCompleted = true;
+                            accountExist = true;
+                            break;
+                        } else {
+                            listenerCompleted = true;
+                            accountExist = false;
+                        }
                     }
+                }else{
+                    listenerCompleted = true;
+                    accountExist = false;
+                    checkListenerStatus(username, newAccount, hashPassord);
                 }
-
                 checkListenerStatus(username, newAccount, hashPassord);
             }
 
@@ -365,8 +361,8 @@ public class SignUpActivity extends AppCompatActivity {
                     final SharedPreferences.Editor editor = pref.edit();
                     editor.putString(KEY, username);
                     editor.commit();
-                    saveUserInfo(acc, hashPw);
-                    Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
+                    //saveUserInfo(acc, hashPw);
+                    Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
                     startActivity(intent);
                 }
             }

@@ -131,9 +131,6 @@ public class WelcomeActivity extends AppCompatActivity {
         int ret = jobScheduler.schedule(jobInfo);
         if (ret == JobScheduler.RESULT_SUCCESS) Log.d("FUCK", "Job scheduled successfully!");
 
-        mPlaceDetectionClient = Places.getPlaceDetectionClient(WelcomeActivity.this, null);
-        guessCurrentPlace();
-
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mActivityTitle = getTitle().toString();
@@ -168,7 +165,7 @@ public class WelcomeActivity extends AppCompatActivity {
         String userName = pref.getString(KEY, null);
         Resources res = getResources();
         String text = String.format(res.getString(R.string.Welcome), userName);
-        mWelcome = (TextView) findViewById(R.id.welcome);
+        mWelcome = (TextView)findViewById(R.id.welcome);
         mWelcome.setText(text);
         updateUI();
         clickItem();
@@ -294,7 +291,7 @@ public class WelcomeActivity extends AppCompatActivity {
             @Override
             public void onItemClick(View view, int position) {
                 Intent intent = new Intent(WelcomeActivity.this, ViewEventActivity.class);
-                Meetings meeting = meetingsList.get(position);
+                Meetings meeting =meetingsList.get(position);
                 String name = meeting.getTitle();
                 String location = meeting.getDestination();
                 String time = meeting.getTimeOfMeeting();
@@ -305,49 +302,9 @@ public class WelcomeActivity extends AppCompatActivity {
                 intent.putExtra(TIME, time);
                 intent.putExtra(DATE, date);
                 intent.putExtra(DESC, desc);
-                intent.putExtra(MEETING_ID, meeting.getId());
                 startActivity(intent);
             }
         });
     }
 
-    public void guessCurrentPlace() {
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            mLocationPermissionGranted = true;
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
-            Task<PlaceLikelihoodBufferResponse> placeResult = mPlaceDetectionClient.getCurrentPlace(null);
-            placeResult.addOnCompleteListener(new OnCompleteListener<PlaceLikelihoodBufferResponse>() {
-                @Override
-                public void onComplete(@NonNull Task<PlaceLikelihoodBufferResponse> task) {
-                    ArrayList<Float> currentList = new ArrayList<Float>();
-                    HashMap<Float, com.example.kiennhan.when2leave.model.Location> mapLocation= new HashMap<>();
-                    PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
-                    for (PlaceLikelihood placeLikelihood : likelyPlaces) {
-                        com.example.kiennhan.when2leave.model.Location loc = new com.example.kiennhan.when2leave.model.Location(placeLikelihood.getPlace().getLatLng().longitude,
-                                placeLikelihood.getPlace().getLatLng().latitude);
-                        mapLocation.put(placeLikelihood.getLikelihood(), loc);
-                        currentList.add(placeLikelihood.getLikelihood());
-                    }
-                    Collections.sort(currentList);
-                    int size = currentList.size();
-                    com.example.kiennhan.when2leave.model.Location likelyLocation = mapLocation.get(currentList.get(size - 1));
-                    Log.d("CURRENT_LOCATION", "Long: " + likelyLocation.getLong() + ", Lat: " + likelyLocation.getLati());
-                    SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
-                    SharedPreferences.Editor editor = locPref.edit();
-                    Gson gson = new Gson();
-                    String json = gson.toJson(likelyLocation);
-                    editor.putString(SAVE_LOCATION, json);
-                    editor.commit();
-                    likelyPlaces.release();
-                }
-            });
-    }
 }
-
-

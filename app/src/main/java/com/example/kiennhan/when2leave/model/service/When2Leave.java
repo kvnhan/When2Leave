@@ -18,15 +18,11 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.example.kiennhan.when2leave.model.Meetings;
-import com.example.kiennhan.when2leave.model.Meetings;
-import com.example.kiennhan.when2leave.model.activity.CreateEventActivity;
 import com.example.kiennhan.when2leave.model.activity.R;
 import com.example.kiennhan.when2leave.model.activity.ViewEventActivity;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -35,10 +31,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 import database.DataBaseHelper;
-
-import static android.content.ContentValues.TAG;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -49,11 +42,9 @@ import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,9 +61,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-import database.DataBaseHelper;
-
-import static android.content.ContentValues.TAG;
 
 public class When2Leave extends JobService {
     private  static final String TIME2LEAVE = "time2leave";
@@ -102,7 +90,7 @@ public class When2Leave extends JobService {
         Gson gson = new Gson();
         if(locPref.getString(SAVE_LOCATION, null) != null) {
             String json = locPref.getString(SAVE_LOCATION, "");
-            Location obj = gson.fromJson(json, Location.class);
+            com.example.kiennhan.when2leave.model.Location obj = gson.fromJson(json, com.example.kiennhan.when2leave.model.Location.class);
             Log.d("FUCK", "Long: " + obj.getLong() + ", Lat: " + obj.getLati());
         }
 
@@ -130,7 +118,6 @@ public class When2Leave extends JobService {
         @Override
         protected Void doInBackground(Void... params) {
             //TODO: Get current location, calculate distance time to a list of meetings retrieved from database, including traffic,etc....
-
             Meetings meeting = null;
             Date date = null;
 
@@ -181,6 +168,15 @@ public class When2Leave extends JobService {
 
                         PlaceLikelihood place = placeLikelihoods.get(0);
                         String placeID = place.getPlace().getId();
+
+                        com.example.kiennhan.when2leave.model.Location likelyLocation = new com.example.kiennhan.when2leave.model.Location(place.getPlace().getLatLng().longitude,
+                                place.getPlace().getLatLng().latitude);
+                        SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
+                        SharedPreferences.Editor editor = locPref.edit();
+                        Gson gson = new Gson();
+                        String json = gson.toJson(likelyLocation);
+                        editor.putString(SAVE_LOCATION, json);
+                        editor.commit();
 
                         placeLikelihoods.release();
 

@@ -504,7 +504,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(DbSchema.MeetingTable.Cols.TITLE, updatedMeeting.getTitle());
         values.put(DbSchema.MeetingTable.Cols.DATE_ID, updatedMeeting.getDateOfMeeting());
-        values.put(DbSchema.MeetingTable.Cols.TIME_ID, updatedMeeting.getTimeOfM0eeting());
+        values.put(DbSchema.MeetingTable.Cols.TIME_ID, updatedMeeting.getTimeOfMeeting());
         values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, updatedMeeting.getDestination());
         values.put(DbSchema.MeetingTable.Cols.DESCRIPTION, updatedMeeting.getDescription());
         values.put(DbSchema.MeetingTable.Cols.ISCOMPLETE, "false");
