@@ -131,7 +131,8 @@ public class When2Leave extends JobService {
         protected Void doInBackground(Void... params) {
             //TODO: Get current location, calculate distance time to a list of meetings retrieved from database, including traffic,etc....
 
-            Meetings meeting;
+            Meetings meeting = null;
+            Date date = null;
 
 
             // Get a list of weekly events
@@ -152,10 +153,10 @@ public class When2Leave extends JobService {
                 String dateTime = m.getDateOfMeeting() + " " + m.getTimeOfMeeting();
                 SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm");
                 try {
-                    Date d = sdf.parse(dateTime);
+                    date = sdf.parse(dateTime);
 
                     //if the current time is before the next upcoming meeting
-                    if (new Date().before(d)) {
+                    if (new Date().before(date)) {
                         meeting = m;
                         Log.i("tester", "next meeting: " + m.getTitle());
                         break;
@@ -171,62 +172,96 @@ public class When2Leave extends JobService {
                         .addApi(Places.GEO_DATA_API)
                         .addApi(Places.PLACE_DETECTION_API)
                         .build();
+            }
                 mGoogleApiClient.connect();
-                Log.i("tester", "got location");
+
 
                 @SuppressLint("MissingPermission") PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
                         .getCurrentPlace(mGoogleApiClient, null);
+                final Meetings finalMeeting = meeting;
+                final Date finalDate = date;
                 result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
+
                     @Override
                     public void onResult(PlaceLikelihoodBuffer placeLikelihoods) {
 
                         PlaceLikelihood place = placeLikelihoods.get(0);
+                        String placeID = place.getPlace().getId();
                         Log.i("tester", String.format("Place '%s' has lat: %g and long: %g",
                                 place.getPlace().getName(),
                                 place.getPlace().getLatLng().latitude,
                                 place.getPlace().getLatLng().longitude));
+                        Log.i("tester", place.getPlace().getId());
 
                         placeLikelihoods.release();
 
-                        getArrivalTime();
-                    }
 
-                    //make the request to get the time to travel to the next meeting
-                    public void getArrivalTime() {
-                        URL url = null;
-                        try {
-                            url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Disneyland&destination=Universal+Studios+Hollywood4&key=AIzaSyBbWG82CGJS1t6RT5DoCV5cjKV8cHrLHNk");
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
+                        if(finalMeeting != null) {
+                            Log.i("tester", "next meeting name: " + finalMeeting.getTitle());
+                            Log.i("tester", "next meeting dateTime: " + finalDate.getTime());
+                            Log.i("tester", "next meeting location: " + finalMeeting.getDestination());
+                            Log.i("tester", finalMeeting.getDestination().replaceAll(" ", "+"));
+                            new getDirectionsTask(finalMeeting, finalDate, placeID).execute();
                         }
-                        try {
-                            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                            try {
-                                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 
-                                int data = in.read();
-                                String str = "";
-                                while (data != -1) {
-                                    str += (char) data;
-                                    data = in.read();
-                                }
-                                in.close();
-                                Log.i("tester", str);
-                            } finally {
-                                urlConnection.disconnect();
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
                     }
                 });
-            }
 
 
 
             Log.i("tester", "DOING BACKGROUND WORK");
             return null;
         }
+
+        private class getDirectionsTask extends AsyncTask<Void, Void, Void> {
+
+            Meetings meeting;
+            Date date;
+            String placeID;
+
+            getDirectionsTask(Meetings meeting, Date date, String placeID) {
+                this.meeting = meeting;
+                this.date = date;
+                this.placeID = placeID;
+            }
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                URL url = null;
+                String origin = placeID;
+                String destination = meeting.getDestination().replaceAll(" ", "+");
+                String key = "AIzaSyBbWG82CGJS1t6RT5DoCV5cjKV8cHrLHNk";
+                String arrivalTime = date.getTime()+"";
+                try {
+                    url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=place_id:"+origin+"&destination="+destination+"&arrival_time="+arrivalTime+"&key="+key);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    try {
+                        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+
+                        int data = in.read();
+                        String str = "";
+                        while (data != -1) {
+                            str += (char) data;
+                            data = in.read();
+                        }
+                        in.close();
+                        Log.i("tester", str);
+                    } finally {
+                        urlConnection.disconnect();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                return null;
+            }
+        }
+
     }
 
     public ArrayList<Meetings> timeToLeave(ArrayList<Meetings> lom) throws ParseException {
