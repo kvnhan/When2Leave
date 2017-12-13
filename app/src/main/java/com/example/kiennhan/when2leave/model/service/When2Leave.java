@@ -58,6 +58,7 @@ public class When2Leave extends JobService {
     @Override
     public boolean onStartJob(JobParameters params) {
         this.params = params;
+        /*
         SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
         Gson gson = new Gson();
         if(locPref.getString(SAVE_LOCATION, null) != null) {
@@ -65,6 +66,7 @@ public class When2Leave extends JobService {
             Location obj = gson.fromJson(json, Location.class);
             Log.d("CURRENT LOCATION", "Long: " + obj.getLong() + ", Lat: " + obj.getLati());
         }
+        */
         Log.d("FUCK", "STARTING BACKGROUND WORK");
         new Time2Leave().execute();
         return true;
@@ -162,7 +164,7 @@ public class When2Leave extends JobService {
             Date startDate =  df.parse(m.getDateOfMeeting());
             Calendar todayDate = Calendar.getInstance();
             todayDate.setTime(startDate);
-            if(todayDate.get(Calendar.DAY_OF_MONTH) == mDay && todayDate.get(Calendar.MONTH) == mMonth){
+            if(todayDate.get(Calendar.DAY_OF_MONTH) == mDay && todayDate.get(Calendar.MONTH)  == mMonth){
                 //TODO: Compare current hour to arrrival Time
             }
 

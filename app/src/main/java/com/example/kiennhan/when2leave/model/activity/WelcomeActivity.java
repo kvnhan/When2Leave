@@ -312,6 +312,7 @@ public class WelcomeActivity extends AppCompatActivity {
                     Collections.sort(currentList);
                     int size = currentList.size();
                     com.example.kiennhan.when2leave.model.Location likelyLocation = mapLocation.get(currentList.get(size - 1));
+                    Log.d("CURRENT_LOCATION", "Long: " + likelyLocation.getLong() + ", Lat: " + likelyLocation.getLati());
                     SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
                     SharedPreferences.Editor editor = locPref.edit();
                     Gson gson = new Gson();
