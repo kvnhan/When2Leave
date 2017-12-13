@@ -92,40 +92,6 @@ public class When2Leave extends JobService {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            //TODO: Post notification
-
-            /*
-            Get a list of upcoming meetings and create notification for ea
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(When2Leave.this);
-            Gson gson = new Gson();
-            String json = sharedPrefs.getString(LIST, null);
-            Type type = new TypeToken<ArrayList<Meetings>>() {}.getType();
-            ArrayList<Meetings> arrayList = gson.fromJson(json, type);
-            */
-            Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
-                            When2Leave.this,
-                            0,
-                            resultIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                    );
-
-            NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(When2Leave.this, TIME2LEAVE)
-                            .setSmallIcon(R.drawable.ic_launcher_background)
-                            .setTicker("TIME TO LEAVE!!!")
-                            .setContentTitle("When2Leave")
-                            .setContentIntent(resultPendingIntent)
-                            .setDefaults(Notification.DEFAULT_SOUND)
-                            .setAutoCancel(true)
-                            .setContentText("You Should Leave for Your Meeting");
-
-            int mNotificationId = 001;
-            NotificationManager mNotifyMgr =
-                    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            mNotifyMgr.notify(mNotificationId, mBuilder.build());
-
             Log.i("tester", "FINISH WORK");
             jobFinished(params, false);
         }
@@ -241,11 +207,42 @@ public class When2Leave extends JobService {
                         in.close();
                         Log.i("tester", str);
 
+                        //parse the JSON reply
                         try {
                             JSONObject directions = new JSONObject(str);
-                            int seconds = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("duration").getInt("value");
+                            int travelSeconds = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("duration").getInt("value");
 
-                            Log.i("tester", seconds+" seconds");
+                            Log.i("tester", travelSeconds+" seconds to arrive");
+
+                            //show the notification if it's time to leave
+                            long timeDiff = (date.getTime()-new Date().getTime()) / 1000;
+                            long leftoverTime = timeDiff-travelSeconds;
+                            Log.i("tester", leftoverTime+" seconds leftover");
+                            if(leftoverTime < 60*15) {
+                                Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
+                                PendingIntent resultPendingIntent =
+                                        PendingIntent.getActivity(
+                                                When2Leave.this,
+                                                0,
+                                                resultIntent,
+                                                PendingIntent.FLAG_UPDATE_CURRENT
+                                        );
+
+                                NotificationCompat.Builder mBuilder =
+                                        new NotificationCompat.Builder(When2Leave.this, TIME2LEAVE)
+                                                .setSmallIcon(R.drawable.ic_launcher_background)
+                                                .setTicker("TIME TO LEAVE!!!")
+                                                .setContentTitle("When2Leave")
+                                                .setContentIntent(resultPendingIntent)
+                                                .setDefaults(Notification.DEFAULT_SOUND)
+                                                .setAutoCancel(true)
+                                                .setContentText("Leave now for " + meeting.getTitle());
+
+                                int mNotificationId = 001;
+                                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                                mNotifyMgr.notify(mNotificationId, mBuilder.build());
+                            }
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
