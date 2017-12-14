@@ -139,8 +139,10 @@ public class ViewEventActivity extends AppCompatActivity {
                                     String uri = "http://maps.google.com/maps?saddr=" + obj.getLati() + "," + obj.getLong() + "&daddr=" +
                                             latitude + "," + longitude;
                                     Intent intent3 = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                                    intent3.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     intent3.setPackage("com.google.android.apps.maps");
                                     startActivity(intent3);
+                                    finish();
                                 }
                             })
                             .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
