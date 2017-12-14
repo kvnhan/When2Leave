@@ -167,41 +167,40 @@ public class When2Leave extends JobService {
                         .addApi(Places.PLACE_DETECTION_API)
                         .build();
             }
-                mGoogleApiClient.connect();
+            mGoogleApiClient.connect();
 
 
-                @SuppressLint("MissingPermission") PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
-                        .getCurrentPlace(mGoogleApiClient, null);
-                final Meetings finalMeeting = meeting;
-                final Date finalDate = date;
-                result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
+            @SuppressLint("MissingPermission") PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
+                    .getCurrentPlace(mGoogleApiClient, null);
+            final Meetings finalMeeting = meeting;
+            final Date finalDate = date;
+            result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
 
-                    @Override
-                    public void onResult(PlaceLikelihoodBuffer placeLikelihoods) {
+                @Override
+                public void onResult(PlaceLikelihoodBuffer placeLikelihoods) {
 
-                        PlaceLikelihood place = placeLikelihoods.get(0);
-                        String placeID = place.getPlace().getId();
+                    PlaceLikelihood place = placeLikelihoods.get(0);
+                    String placeID = place.getPlace().getId();
 
-                        com.example.kiennhan.when2leave.model.Location likelyLocation = new com.example.kiennhan.when2leave.model.Location(place.getPlace().getLatLng().longitude,
-                                place.getPlace().getLatLng().latitude);
+                    com.example.kiennhan.when2leave.model.Location likelyLocation = new com.example.kiennhan.when2leave.model.Location(place.getPlace().getLatLng().longitude,
+                            place.getPlace().getLatLng().latitude);
 
-                        //Save user location
-                        SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
-                        SharedPreferences.Editor editor = locPref.edit();
-                        Gson gson = new Gson();
-                        String json = gson.toJson(likelyLocation);
-                        editor.putString(SAVE_LOCATION, json);
-                        editor.commit();
+                    //Save user location
+                    SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
+                    SharedPreferences.Editor editor = locPref.edit();
+                    Gson gson = new Gson();
+                    String json = gson.toJson(likelyLocation);
+                    editor.putString(SAVE_LOCATION, json);
+                    editor.commit();
 
-                        placeLikelihoods.release();
-                        if(finalMeeting != null) {
-
-                            //Start a background task to get the direction
-                            new getDirectionsTask(finalMeeting, finalDate, placeID).execute();
-                        }
-
+                    placeLikelihoods.release();
+                    if(finalMeeting != null) {
+                        //Start a background task to get the direction
+                        new getDirectionsTask(finalMeeting, finalDate, placeID).execute();
                     }
-                });
+
+                }
+            });
 
             Log.i("tester", "DOING BACKGROUND WORK");
             return null;
@@ -252,7 +251,7 @@ public class When2Leave extends JobService {
                             int travelSeconds = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("duration").getInt("value");
                             double longtitude = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("end_location").getDouble("lng");
                             double latitude = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("end_location").getDouble("lat");
-                            Log.i("tester", travelSeconds+" seconds to arrive");
+                            Log.d("tester", travelSeconds+" seconds to arrive");
 
                             //show the notification if it's time to leave
                             SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm");
@@ -267,7 +266,7 @@ public class When2Leave extends JobService {
                             //Calculate the remaining time user have left before notifying
                             long timeDiff = (meetingDate.getTime() - today.getTime().getTime()) / 1000;
                             long leftoverTime = timeDiff - (travelSeconds + 900);
-                            Log.i("tester", leftoverTime+" seconds leftover");
+                            Log.d("FUCK", leftoverTime+" seconds leftover");
                             if(leftoverTime < 60*15) {
                                 Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
 

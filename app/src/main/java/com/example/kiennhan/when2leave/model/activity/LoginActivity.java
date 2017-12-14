@@ -132,10 +132,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-
-        //Make reference to firebase
-        myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
-
         mDb = new DataBaseHelper(getApplicationContext());
 
         mPasswordView = (EditText) findViewById(R.id.password);
@@ -176,8 +172,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         //Check for connection to the firebase
-        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
-        connectedRef.addValueEventListener(new ValueEventListener() {
+        myRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+        myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 connected = snapshot.getValue(Boolean.class);
@@ -195,6 +191,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 System.err.println("Listener was cancelled");
             }
         });
+
+        //Make reference to firebase
+        myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
+
     }
 
     @Override
@@ -255,6 +255,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             cancel = true;
 
         }
+
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
