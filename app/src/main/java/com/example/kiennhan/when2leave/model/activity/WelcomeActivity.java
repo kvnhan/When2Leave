@@ -69,6 +69,9 @@ import java.util.HashMap;
 
 import database.DataBaseHelper;
 
+/**
+ * Welcome screen
+ */
 public class WelcomeActivity extends AppCompatActivity {
 
     TextView mWelcome;
@@ -85,11 +88,20 @@ public class WelcomeActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private DailyEventAdapter mEventAdapter;
 
+    //Key for storing and retrieving data
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String LOC_KEY = "lockey";
     private static final String LIST = "list";
     private static final String LOM = "listofmeeting";
+    private static final String EVENTNAME = "eventname";
+    private static final String LOCATION = "location";
+    private static final String TIME = "time";
+    private static final String DATE = "date";
+    private static final String DESC = "description";
+    private static final String MEETING_ID = "meetingid";
+    private static final String CURR_LOCATION = "current";
+    private static final String SAVE_LOCATION = "saveloc";
 
 
     private boolean onWelcome = false;
@@ -97,45 +109,31 @@ public class WelcomeActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationClient;
     DataBaseHelper mDB;
 
-    private static final String EVENTNAME = "eventname";
-    private static final String LOCATION = "location";
-    private static final String TIME = "time";
-    private static final String DATE = "date";
-    private static final String DESC = "description";
-    private static final String MEETING_ID = "meetingid";
-
-    private static final String CURR_LOCATION = "current";
-    private static final String SAVE_LOCATION = "saveloc";
     private PlaceDetectionClient mPlaceDetectionClient;
 
-    // The entry point to the Fused Location Provider.
+    // Permission code
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
     private static final String LOC_PER = "LocationPermissionGranted";
-
-
-    // The geographical location where the device is currently located. That is, the last-known
-    // location retrieved by the Fused Location Provider.
-    private Location mLastKnownLocation;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
+
+        //Set a toolbar
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         myToolbar.setTitle("");
         myToolbar.setSubtitle("");
 
+        //Set up a navigation drawer
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mActivityTitle = getTitle().toString();
-
         addDrawerItems();
         setupDrawer();
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
@@ -159,6 +157,7 @@ public class WelcomeActivity extends AppCompatActivity {
             }
         });
 
+        //Get user name from a store value at KEY
         SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
         Resources res = getResources();
@@ -168,6 +167,7 @@ public class WelcomeActivity extends AppCompatActivity {
         updateUI();
         clickItem();
 
+        //Check for permission to use location
         if (ContextCompat.checkSelfPermission(WelcomeActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED &&
@@ -185,8 +185,10 @@ public class WelcomeActivity extends AppCompatActivity {
             }
         }
 
+        //Check if permission was acquired
         SharedPreferences LOC_pref = getApplicationContext().getSharedPreferences(LOC_KEY, MODE_PRIVATE);
         if(LOC_pref.getBoolean(LOC_PER, false)){
+            //Create a jobscheduler
             JobScheduler jobScheduler = (JobScheduler) getApplicationContext().getSystemService(getApplicationContext().JOB_SCHEDULER_SERVICE);
             ComponentName componentName = new ComponentName(getApplicationContext(), When2Leave.class);
             JobInfo jobInfo = new JobInfo.Builder(1, componentName)
@@ -231,14 +233,19 @@ public class WelcomeActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Add item to the navigation drawer
+     */
     private void addDrawerItems() {
         items = getResources().getStringArray(R.array.menus);
         mAdapter = new ArrayAdapter<String>(this, R.layout.nav_menu, items);
         mDrawerList.setAdapter(mAdapter);
     }
 
+    /**
+     * Set up a navigation drawer
+     */
     private void setupDrawer() {
-
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 R.string.drawer_open, R.string.drawer_close) {
 
@@ -276,21 +283,31 @@ public class WelcomeActivity extends AppCompatActivity {
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
+    /**
+     * Update UI when there are changes made to a list of meetings created from the user
+     */
     private void updateUI() {
         mDB = new DataBaseHelper(getApplicationContext());
+
+        //Get stored username
         SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
         SharedPreferences mypref = getApplicationContext().getSharedPreferences(LIST, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
         String uid = mDB.getUUID(userName, getApplicationContext());
 
+        //Get a list of weekly events
         meetingsList = mDB.getWeeklyMeetings(uid, getApplicationContext());
         ListOfMeetings lom = new ListOfMeetings();
         lom.setMeetings(meetingsList);
         Gson gson = new Gson();
         String serializedMap = gson.toJson(lom);
+
+        //Save the list to LOM
         SharedPreferences.Editor editor = mypref.edit();
         editor.putString(LOM, serializedMap);
         editor.commit();
+
+        //Set Adapters to Recyclerview
         try {
             if (mEventAdapter == null) {
                 mEventAdapter = new DailyEventAdapter(getApplication(), meetingsList);
@@ -313,12 +330,18 @@ public class WelcomeActivity extends AppCompatActivity {
         updateUI();
     }
 
+    /**
+     * Allow user to view the item inside the weekly events list
+     */
     public void clickItem(){
         mEventAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
+
                 Intent intent = new Intent(WelcomeActivity.this, ViewEventActivity.class);
                 Meetings meeting =meetingsList.get(position);
+
+                //Store clicked meeting to the intent
                 String name = meeting.getTitle();
                 String location = meeting.getDestination();
                 String time = meeting.getTimeOfMeeting();
@@ -336,8 +359,8 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        //Grant permission for location use
         if (requestCode == 108) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

@@ -3,7 +3,7 @@ package com.example.kiennhan.when2leave.model;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
- * Created by Kien Nhan on 12/4/2017.
+ * Hashing and checking password
  */
 
 public class Password {

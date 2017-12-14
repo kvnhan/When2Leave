@@ -30,9 +30,12 @@ import java.util.Locale;
 
 import database.DataBaseHelper;
 
+/**
+ * Viewing created events screen
+ */
 public class ViewEventActivity extends AppCompatActivity {
 
-
+    //Keys for storing data
     private static final String EVENTNAME = "eventname";
     private static final String LOCATIN = "location";
     private static final String TIME = "time";
@@ -44,17 +47,14 @@ public class ViewEventActivity extends AppCompatActivity {
     private static final String LAT = "lat";
     private static final String LIST = "list";
     private static final String LOM = "listofmeeting";
-
-
     private static final String MY_PREF = "myPref";
     private static final String TWO_CLICK = "twoclick";
-
     private static final String UID = "uid";
     private static final String ACC_UID = "accuid";
+    private static final String CURR_LOCATION = "current";
+    private static final String SAVE_LOCATION = "saveloc";
 
-
-
-
+    //UI reference
     EditText mName;
     EditText mLocation;
     EditText mTime;
@@ -62,19 +62,21 @@ public class ViewEventActivity extends AppCompatActivity {
     EditText mDesc;
     Button mEdit;
 
+    //Recyclerview and adapter
     private RecyclerView mRecyclerView;
     private DailyEventAdapter mEventAdapter;
+
+    //SQL Database
     DataBaseHelper mDB;
     com.example.kiennhan.when2leave.model.Location obj;
 
-    private static final String CURR_LOCATION = "current";
-    private static final String SAVE_LOCATION = "saveloc";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_event);
 
+        //Get intent data from the activity that started ViewEventActivity
         final Intent intent = getIntent();
         final String name = intent.getStringExtra(EVENTNAME);
         final String loc = intent.getStringExtra(LOCATIN);
@@ -83,11 +85,13 @@ public class ViewEventActivity extends AppCompatActivity {
         final String desc = intent.getStringExtra(DESC);
         final String id = intent.getStringExtra(MEETING_ID);
 
+        //Get Location data
         SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
         Gson gso = new Gson();
         String json = locPref.getString(SAVE_LOCATION, "");
         obj = gso.fromJson(json, com.example.kiennhan.when2leave.model.Location.class);
 
+        //Initialize UI
         mName = findViewById(R.id.event_name_field);
         mLocation = findViewById(R.id.event_location_feld);
         mTime = findViewById(R.id.event_Time);
@@ -95,6 +99,7 @@ public class ViewEventActivity extends AppCompatActivity {
         mDesc = findViewById(R.id.event_Description);
         mEdit = findViewById(R.id.edit);
 
+        //Set the field using information recieved from intent
         mName.setText(name);
         mName.setEnabled(false);
         mLocation.setText(loc);
@@ -106,11 +111,12 @@ public class ViewEventActivity extends AppCompatActivity {
         mDesc.setText(desc);
         mDesc.setEnabled(false);
 
-
+        //Check if ViewEventActivity was started by a notification
         if (intent.getBooleanExtra(LETSGO, false)) {
             mEdit.setText("LET'S GO");
         }
 
+        //Get a saved list of meetings
         Gson gson = new Gson();
         SharedPreferences listpref = getApplicationContext().getSharedPreferences(LIST, MODE_PRIVATE);
         String listStr = listpref.getString(LOM, null);
@@ -124,20 +130,29 @@ public class ViewEventActivity extends AppCompatActivity {
         mEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //Check if ViewEventActivity was started by a notification
                 if (intent.getBooleanExtra(LETSGO, false)) {
+                    //Alert box to see if user want to use google map navigation
                     new AlertDialog.Builder(ViewEventActivity.this)
                             .setTitle("Use GoogleMaps")
                             .setMessage("Do you really want to use Google Maps to navigate ?")
                             .setIcon(android.R.drawable.ic_dialog_alert)
                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                                //If user click yes
                                 public void onClick(DialogInterface dialog, int whichButton) {
 
                                     Meetings meeting = new Meetings(id, name, null, time, date, "", loc, desc, true);
                                     updateDatabase(meeting);
+
+                                    //Get latitude and longtitude of destination
                                     double latitude = intent.getDoubleExtra(LAT, 0);
                                     double longitude = intent.getDoubleExtra(LONG, 0);
+
+                                    //Create a uri using latitude and longtitude of destination and user location
                                     String uri = "http://maps.google.com/maps?saddr=" + obj.getLati() + "," + obj.getLong() + "&daddr=" +
                                             latitude + "," + longitude;
+
                                     Intent intent3 = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                                     intent3.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     intent3.setPackage("com.google.android.apps.maps");
@@ -145,6 +160,7 @@ public class ViewEventActivity extends AppCompatActivity {
                                     finish();
                                 }
                             })
+                            //If user click no
                             .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int whichButton) {
@@ -156,6 +172,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 }else {
 
+                    //Start a CreateEventActivity to edit the event
                     Intent intent2 = new Intent(ViewEventActivity.this, CreateEventActivity.class);
                     intent2.putExtra(EVENTNAME, name);
                     intent2.putExtra(LOCATIN, loc);
@@ -170,7 +187,12 @@ public class ViewEventActivity extends AppCompatActivity {
             }
         });
     }
-        public void updateDatabase(Meetings meeting){
+
+    /**
+     * Update firebase and when2leave.db meeting info
+     * @param meeting
+     */
+    public void updateDatabase(Meetings meeting){
         mDB = new DataBaseHelper(getApplicationContext());
         mDB.deleteEvent(getApplicationContext(), meeting);
 

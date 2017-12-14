@@ -3,7 +3,7 @@ package com.example.kiennhan.when2leave.model;
 import android.view.View;
 
 /**
- * Created by Kien Nhan on 11/11/2017.
+ * Interface for listening to item click
  */
 
 public interface OnItemClickListener {

@@ -70,9 +70,13 @@ import database.DataBaseHelper;
 
 import static com.google.android.gms.location.places.ui.PlacePicker.getPlace;
 
+/**
+ * A Create Event Screen
+ */
 public class CreateEventActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 
+    // Views
     EditText mEventName,
             mDescription;
     TextView mTime, mDate, mLocation;
@@ -83,32 +87,33 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
     String event_Location = "";
     String eventName, meetingID;
 
+    //Firebase References
     private DatabaseReference myRef;
     private static final String ACCOUNT = "account";
 
-
+    // Keys for Sharepreferences
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String NAME = "username";
     private static final String UID = "uid";
     private static final String ACC_UID = "accuid";
+
+    //Google Place API
     int PLACE_PICKER_REQUEST = 1;
     private GoogleApiClient mGoogleApiClient;
 
+    //Keys for Sharepreferences
     private static final String EVENT_NAME = "EVENT_NAME";
     private static final String DES = "DES";
     private static final String TIME_KEY = "TIME_KEY";
     private static final String DATE_KEY = "DATE_KEY";
     private static final String LOCATION = "LOCATION";
-
     private static final String EVENTNAME = "eventname";
     private static final String LOCATIN = "location";
     private static final String TIME = "time";
     private static final String DATE = "date";
     private static final String DESC = "description";
     private static final String MEETING_ID = "meetingid";
-
-
     private static final String MY_PREF = "myPref";
     private static final String TWO_CLICK = "twoclick";
 
@@ -128,14 +133,13 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
 
+        //Initialize DatabaseHelper
         mDB = new DataBaseHelper(getApplicationContext());
 
-        mEventName = findViewById(R.id.eventName);
-
-        mLocation = findViewById(R.id.event_location);
-
+        //Initialize reference to firebase database
         myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
 
+        //Initialize GoogleAPI client
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                     .addConnectionCallbacks(CreateEventActivity.this)
@@ -146,7 +150,12 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                     .build();
         }
 
+        //Build Google Places API
         final PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+
+        //Find id for all views and buttons
+        mEventName = findViewById(R.id.eventName);
+        mLocation = findViewById(R.id.event_location);
         mDescription = findViewById(R.id.description);
         mLocation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -186,7 +195,6 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                 mDatePicker.show();
             }
         });
-
         mTime= findViewById(R.id.timePicker);
         mTime.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -212,10 +220,10 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
 
             }
         });
-
         String id = "";
-
         mCreateEvent = findViewById(R.id.createEvent);
+
+        //Check if CreateEventActivity was started by another activity
         final Intent intent = getIntent();
         if(intent.getIntExtra(TWO_CLICK, 0) == 1){
             mCreateEvent.setText("Update Event");
@@ -237,15 +245,21 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //Store the username at KEY
                 SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
                 String userName = pref.getString(KEY, null);
                 Account account = mDB.getAccountWithUserName(getApplicationContext(), userName);
 
+                //Create a unique id for event
                 meetingID = UUID.randomUUID().toString() + "_" + userName;
                 eventName = mEventName.getText().toString();
                 boolean isReady = checkField(eventName);
                 Meetings meeting;
+
+                //check if all fields are filled before moving on
                 if(isReady) {
+
+                    //If the event need to be updates
                     if(intent.getIntExtra(TWO_CLICK, 0) == 1){
                         meeting = new Meetings(finalId, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString(), false);
                         mDB.updateEvent(getApplicationContext(), meeting);
@@ -259,6 +273,7 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                         startActivity(intent);
                     }
 
+                    //Save the event to firebase database
                     saveMeetingInfo(account, meeting);
 
                 }
@@ -266,6 +281,7 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
             }
         });
 
+        //Check if there was any configuration changes
         if(savedInstanceState != null){
             mEventName.setText(savedInstanceState.getString(EVENT_NAME));
             mDescription.setText(savedInstanceState.getString(DES));
@@ -277,6 +293,12 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
 
     }
 
+    /**
+     * Save meeting object data to firebase
+     * @param account
+     * @param meetings
+     * @return
+     */
     private boolean saveMeetingInfo(Account account, Meetings meetings){
         SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
         String uid = mypref.getString(ACC_UID, null);
@@ -285,6 +307,11 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
         return true;
     }
 
+    /**
+     * Check for empty fields
+     * @param name
+     * @return
+     */
     public boolean checkField(String name){
         boolean isready = true;
         if(name.equals("")){
@@ -323,6 +350,8 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == RESULT_OK) {
+
+                //Get results from Google Place API
                 Place place = getPlace(CreateEventActivity.this, data);
                 event_Location = String.valueOf(place.getAddress());
                 mLocation.setText(event_Location);

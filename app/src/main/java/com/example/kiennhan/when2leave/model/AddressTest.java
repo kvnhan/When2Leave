@@ -1,9 +1,8 @@
 package com.example.kiennhan.when2leave.model;
 
 /**
- * Created by Kien Nhan on 12/9/2017.
+ * Holds Address inforamtion and for storing object data retrieved from firebase
  */
-
 public class AddressTest {
     private String id;
     private String streetNumber;

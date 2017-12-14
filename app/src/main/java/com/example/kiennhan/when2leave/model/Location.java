@@ -1,9 +1,8 @@
 package com.example.kiennhan.when2leave.model;
 
 /**
- * Created by Kien Nhan on 12/12/2017.
+ * Holds Loaction information
  */
-
 public class Location {
 
     private double Long;

@@ -61,22 +61,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-
+/**
+ * Jobscheduler Service
+ */
 public class When2Leave extends JobService {
+
+    //Keys for storing and retreving data
     private  static final String TIME2LEAVE = "time2leave";
-    private GoogleApiClient mGoogleApiClient;
-    private FusedLocationProviderClient mFusedLocationClient;
     private  static final String LIST = "meetinglist";
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
-
-
-
-    DataBaseHelper mDB;
-    private com.example.kiennhan.when2leave.model.Location currentLocation;
     private static final String CURR_LOCATION = "current";
     private static final String SAVE_LOCATION = "saveloc";
-
     private static final String EVENTNAME = "eventname";
     private static final String LOCATION = "location";
     private static final String TIME = "time";
@@ -87,6 +83,13 @@ public class When2Leave extends JobService {
     private static final String LAT = "lat";
     private static final String MEETING_ID = "meetingid";
 
+
+    //Google API
+    private GoogleApiClient mGoogleApiClient;
+    private FusedLocationProviderClient mFusedLocationClient;
+
+    DataBaseHelper mDB;
+    private com.example.kiennhan.when2leave.model.Location currentLocation;
 
     public When2Leave() {
     }
@@ -100,14 +103,14 @@ public class When2Leave extends JobService {
 
         SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
         Gson gson = new Gson();
+
+        //Get saved user location, if there is one
         if(locPref.getString(SAVE_LOCATION, null) != null) {
             String json = locPref.getString(SAVE_LOCATION, "");
             obj = gson.fromJson(json, com.example.kiennhan.when2leave.model.Location.class);
-            Log.d("FUCK", "Long: " + obj.getLong() + ", Lat: " + obj.getLati());
+            Log.d("LOCATION", "Long: " + obj.getLong() + ", Lat: " + obj.getLati());
         }
 
-        Log.d("FUCK", "STARTING BACKGROUND WORK");
-        Log.i("tester", "STARTING BACKGROUND WORK");
         new Time2Leave().execute();
         return true;
     }
@@ -129,10 +132,8 @@ public class When2Leave extends JobService {
         @SuppressLint("MissingPermission")
         @Override
         protected Void doInBackground(Void... params) {
-            //TODO: Get current location, calculate distance time to a list of meetings retrieved from database, including traffic,etc....
             Meetings meeting = null;
             Date date = null;
-
 
             // Get a list of weekly events
             mDB = new DataBaseHelper(When2Leave.this);
@@ -183,6 +184,8 @@ public class When2Leave extends JobService {
 
                         com.example.kiennhan.when2leave.model.Location likelyLocation = new com.example.kiennhan.when2leave.model.Location(place.getPlace().getLatLng().longitude,
                                 place.getPlace().getLatLng().latitude);
+
+                        //Save user location
                         SharedPreferences locPref = getApplicationContext().getSharedPreferences(CURR_LOCATION, MODE_PRIVATE);
                         SharedPreferences.Editor editor = locPref.edit();
                         Gson gson = new Gson();
@@ -191,16 +194,14 @@ public class When2Leave extends JobService {
                         editor.commit();
 
                         placeLikelihoods.release();
-
-
                         if(finalMeeting != null) {
+
+                            //Start a background task to get the direction
                             new getDirectionsTask(finalMeeting, finalDate, placeID).execute();
                         }
 
                     }
                 });
-
-
 
             Log.i("tester", "DOING BACKGROUND WORK");
             return null;
@@ -262,11 +263,15 @@ public class When2Leave extends JobService {
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }
+
+                            //Calculate the remaining time user have left before notifying
                             long timeDiff = (meetingDate.getTime() - today.getTime().getTime()) / 1000;
                             long leftoverTime = timeDiff - (travelSeconds + 900);
                             Log.i("tester", leftoverTime+" seconds leftover");
                             if(leftoverTime < 60*15) {
                                 Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
+
+                                //Store meeting info in resultIntent
                                 String name = meeting.getTitle();
                                 String location = meeting.getDestination();
                                 String time = meeting.getTimeOfMeeting();
@@ -281,6 +286,7 @@ public class When2Leave extends JobService {
                                 resultIntent.putExtra(LAT, latitude);
                                 resultIntent.putExtra(MEETING_ID, meeting.getId());
                                 resultIntent.putExtra(LETSGO, true);
+
                                 PendingIntent resultPendingIntent =
                                         PendingIntent.getActivity(
                                                 When2Leave.this,
@@ -289,6 +295,7 @@ public class When2Leave extends JobService {
                                                 PendingIntent.FLAG_UPDATE_CURRENT
                                         );
 
+                                //Build a notification
                                 NotificationCompat.Builder mBuilder =
                                         new NotificationCompat.Builder(When2Leave.this, TIME2LEAVE)
                                                 .setSmallIcon(R.drawable.ic_launcher_background)
@@ -314,8 +321,6 @@ public class When2Leave extends JobService {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-
                 return null;
             }
         }

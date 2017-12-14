@@ -28,10 +28,10 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class EventListFragment extends Fragment {
 
+    //Keys for Sharepreferences
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String NAME = "username";
-
     private static final String EVENTNAME = "eventname";
     private static final String LOCATION = "location";
     private static final String TIME = "time";
@@ -39,11 +39,13 @@ public class EventListFragment extends Fragment {
     private static final String DESC = "description";
     private static final String MEETING_ID = "meetingid";
 
+    //Recyclerview and adapter
     private RecyclerView mRecyclerView;
     private EventAdapter mAdapter;
     private DataBaseHelper mDB;
     ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
 
+    //Firebase database reference
     private DatabaseReference myRef;
     private static final String ACCOUNT = "account";
 
@@ -62,16 +64,24 @@ public class EventListFragment extends Fragment {
         View view = inflater.inflate(R.layout.event_recycler_view, container, false);
 
         mDB = new DataBaseHelper(getContext());
+
+        //Get User name of current login username
         SharedPreferences pref = getContext().getSharedPreferences(PREF, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
         String uid = mDB.getUUID(userName, getContext());
+
+        //Make a reference to firebase under "account/USERID"
         myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT + "/" + uid);
 
+        //Initialize the recycler view
         mRecyclerView = (RecyclerView) view.findViewById(R.id.e_recycler_view);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        //Allow swipe delete
         swipe();
 
+        //Update UI when there are data changes
         updateUI();
 
         return view;
@@ -89,8 +99,9 @@ public class EventListFragment extends Fragment {
     }
 
 
-
-
+    /**
+     * Update UI when meeting list changes
+     */
     private void updateUI() {
         SharedPreferences pref = getContext().getSharedPreferences(PREF, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
@@ -106,6 +117,9 @@ public class EventListFragment extends Fragment {
         }
     }
 
+    /**
+     * Swipe to delete an event from list
+     */
     private void swipe() {
         ItemTouchHelper.SimpleCallback simpleItemTouchCallback =
                 new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -146,10 +160,17 @@ public class EventListFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
 
+    /**
+     * Get adapter
+     * @param lom
+     * @return
+     */
     public EventAdapter getmAdapter(ArrayList<Meetings> lom){
         return new EventAdapter(lom);
     }
 
+
+    //Adpater Class
     public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventHolder> {
 
         private List<Meetings> mMeetings;
@@ -167,6 +188,7 @@ public class EventListFragment extends Fragment {
             private TextView mDateTextView;
             private TextView mTimeTextView;
 
+
             public EventHolder(LayoutInflater inflater, ViewGroup parent) {
                 super(inflater.inflate(R.layout.list_item_event, parent, false));
                 itemView.setOnClickListener(this);
@@ -176,6 +198,10 @@ public class EventListFragment extends Fragment {
                 mTimeTextView = (TextView) itemView.findViewById(R.id.fragment_event_time);
             }
 
+            /**
+             * Bind Meeting data to a view
+             * @param meeting
+             */
             public void bind(Meetings meeting) {
                 mMeeting = meeting;
                 mTitleTextView.setText(mMeeting.getTitle());
@@ -187,7 +213,7 @@ public class EventListFragment extends Fragment {
 
             @Override
             public void onClick(View view) {
-                //TODO: Start intent
+
                 Intent intent = new Intent(getActivity(), ViewEventActivity.class);
                 int pos = getAdapterPosition();
                 Meetings meeting = mMeetings.get(pos);
@@ -196,12 +222,16 @@ public class EventListFragment extends Fragment {
                 String time = meeting.getTimeOfMeeting();
                 String date = meeting.getDateOfMeeting();
                 String desc = meeting.getDescription();
+
+                //Store data to an intent
                 intent.putExtra(EVENTNAME, name);
                 intent.putExtra(LOCATION, location);
                 intent.putExtra(TIME, time);
                 intent.putExtra(DATE, date);
                 intent.putExtra(DESC, desc);
                 intent.putExtra(MEETING_ID, meeting.getId());
+
+                //Start ViewEventActivity
                 startActivity(intent);
             }
         }
@@ -223,6 +253,10 @@ public class EventListFragment extends Fragment {
             return mMeetings.size();
         }
 
+        /**
+         * Set mMeeting with a new list
+         * @param m
+         */
         public void setMeetings(List<Meetings> m) {
             mMeetings = m;
         }

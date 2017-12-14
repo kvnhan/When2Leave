@@ -1,7 +1,7 @@
 package com.example.kiennhan.when2leave.model;
 
 /**
- * Created by Kien Nhan on 11/27/2017.
+ * Holds Time information
  */
 
 public class Time {

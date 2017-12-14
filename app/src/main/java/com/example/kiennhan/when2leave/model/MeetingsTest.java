@@ -1,9 +1,8 @@
 package com.example.kiennhan.when2leave.model;
 
 /**
- * Created by Kien on 12/11/2017.
+ * Holds Meeting inforamtion and for storing object data retrieved from firebase
  */
-
 public class MeetingsTest {
     private String id;
     private String title;

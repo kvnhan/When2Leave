@@ -21,10 +21,6 @@ import java.util.List;
 
 import static android.support.v4.content.ContextCompat.startActivity;
 
-/**
- * Created by Kien Nhan on 12/8/2017.
- */
-
 public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.DailyEventHolder> {
 
     private List<Meetings> mMeetings;
@@ -67,6 +63,10 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
                 mTimeTextView = (TextView) itemView.findViewById(R.id.fragment_event_time);
             }
 
+            /**
+             * Bind meeting data to views
+             * @param meeting
+             */
             public void bind(Meetings meeting) {
                 mMeeting = meeting;
                 mTitleTextView.setText(mMeeting.getTitle());
@@ -99,7 +99,11 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
             mMeetings = m;
         }
 
-        public  void removeMeetings(Meetings meetings){
+    /**
+     * Remove meeting from a list of meetings
+     * @param meetings
+     */
+    public  void removeMeetings(Meetings meetings){
             Iterator<Meetings> iter = mMeetings.iterator();
             while(iter.hasNext()){
                 Meetings m = iter.next();
@@ -110,6 +114,10 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
             }
         }
 
+    /**
+     * Listen to item
+     * @param item
+     */
     public void setOnItemClickListener(final OnItemClickListener item){
         this.onItemClickListener = item;
     }

@@ -78,9 +78,7 @@ import static android.support.v4.content.PermissionChecker.checkSelfPermission;
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
-    /**
-     * Id to identity READ_CONTACTS permission request.
-     */
+    //Id to identity permission request.
     private static final int REQUEST_READ_CONTACTS = 0;
     private static final int REQUEST_LOCATION_FINE = 1;
     private static final int REQUEST_LOCATION_COARSE = 2;
@@ -97,22 +95,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private TextView mRegister;
     private String email;
     private String password;
+
+    //Keys for Sharepreference
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String UID = "uid";
     private static final String ACC_UID = "accuid";
+    private static final String ACCOUNT = "account";
+    private static final String PASSWORD_SAFE = "passwordsafe";
+    private static final String PW = "peace";
+    private static final String USER_NAME_SAVE = "passwordsafe";
+    private static final String PASSWORD_SAVE = "passwordsafe";
 
-
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
     private UserLoginTask mAuthTask = null;
 
     // UI references.
@@ -120,15 +114,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+
+
     private DataBaseHelper mDb;
     private boolean accountExist = true;
     private DatabaseReference myRef;
-    private static final String ACCOUNT = "account";
-    private static final String PASSWORD_SAFE = "passwordsafe";
-    private static final String PW = "peace";
+    private boolean connected = false;
+
     private Boolean listenerCompleted = false;
-    private static final String USER_NAME_SAVE = "passwordsafe";
-    private static final String PASSWORD_SAVE = "passwordsafe";
     private FusedLocationProviderClient mFusedLocationClient;
 
 
@@ -139,9 +132,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        populateAutoComplete();
 
+        //Make reference to firebase
         myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
+
+        mDb = new DataBaseHelper(getApplicationContext());
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -179,6 +174,27 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             email = savedInstanceState.getString(USER_NAME_SAVE);
             mEmailView.setText(email);
         }
+
+        //Check for connection to the firebase
+        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+        connectedRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                connected = snapshot.getValue(Boolean.class);
+                if (connected) {
+                    listenerCompleted = true;
+                    System.out.println("connected");
+                } else {
+                    listenerCompleted = true;
+                    System.out.println("not connected");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                System.err.println("Listener was cancelled");
+            }
+        });
     }
 
     @Override
@@ -186,35 +202,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onSaveInstanceState(savedInstanceState);
         savedInstanceState.putString(USER_NAME_SAVE, mEmailView.getText().toString());
 
-    }
-    private void populateAutoComplete() {
-        if (!mayRequestContacts()) {
-            return;
-        }
-
-        getLoaderManager().initLoader(0, null, this);
-    }
-
-    private boolean mayRequestContacts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
-        }
-        if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
-        } else {
-            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-        }
-        return false;
     }
 
     /**
@@ -236,11 +223,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
             return;
         }
-        if (requestCode == REQUEST_READ_CONTACTS) {
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                populateAutoComplete();
-            }
-        }
     }
 
 
@@ -260,7 +242,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        email = mEmailView.getText().toString();
+        email = mEmailView.getText().toString().trim();
         password = mPasswordView.getText().toString();
 
         boolean cancel = false;
@@ -295,9 +277,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
+                mAuthTask = new UserLoginTask(email, password);
+                mAuthTask.execute((Void) null);
 
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
         }
     }
 
@@ -306,8 +288,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
+        return password.length() > 7;
     }
 
     /**
@@ -418,50 +399,69 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
             // Local Database Account Authentication
             // Store values at the time of the login attempt.
             final String email = mEmailView.getText().toString();
             final String password = mPasswordView.getText().toString();
             final Password hp= new Password();
 
-            myRef.addListenerForSingleValueEvent((new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Iterable<DataSnapshot> children = dataSnapshot.getChildren();
-                    for (DataSnapshot child : children) {
-                        AccountTest acoount = child.getValue(AccountTest.class);
-                        if (acoount.getUserName().equals(email) || acoount.getEmail().equals(email)) {
-                            Gson gson = new Gson();
-                            MapWrapper wrapper = new MapWrapper();
-                            SharedPreferences pref = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
-                            String wrapperStr = pref.getString(PASSWORD_SAFE, null);
-                            wrapper = gson.fromJson(wrapperStr, MapWrapper.class);
-                            HashMap<String, String> HtKpi = wrapper.getMyMap();
-                            String hashP = HtKpi.get(acoount.getUserName());
-                            //String hashP = pref.getString(PASSWORD_SAFE, null);
-                            if(hp.checkPassword(password, hashP)) {
+            //Check if the application establish a connection to the firebase reference
+            if(connected) {
+                //Check the username/email against firebase
+                myRef.addListenerForSingleValueEvent((new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Iterable<DataSnapshot> children = dataSnapshot.getChildren();
+                        for (DataSnapshot child : children) {
+                            AccountTest acoount = child.getValue(AccountTest.class);
+                            if (acoount.getUserName().equals(email) || acoount.getEmail().equals(email)) {
+                                Gson gson = new Gson();
+                                MapWrapper wrapper = new MapWrapper();
+                                SharedPreferences pref = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
+                                String wrapperStr = pref.getString(PASSWORD_SAFE, null);
+                                wrapper = gson.fromJson(wrapperStr, MapWrapper.class);
+                                HashMap<String, String> HtKpi = wrapper.getMyMap();
+                                String hashP = HtKpi.get(acoount.getUserName());
+                                //String hashP = pref.getString(PASSWORD_SAFE, null);
+                                if (hp.checkPassword(password, hashP)) {
+                                    listenerCompleted = true;
+                                    accountExist = true;
+                                    break;
+                                }
+                            } else {
                                 listenerCompleted = true;
-                                accountExist = true;
-                                break;
+                                accountExist = false;
                             }
-                        }else{
-                            listenerCompleted = true;
-                            accountExist = false;
                         }
+                        checkListenerStatus(email);
                     }
-                    checkListenerStatus(email);
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        System.err.println("Listener was cancelled");
+                    }
+
+                }));
+            }else {
+                //Authenticate with when2leave.db
+                Boolean accExist = mDb.checkAccount(getApplicationContext(), email, password);
+                String username = mDb.getUsername(email, getApplicationContext());
+                Gson gson = new Gson();
+                MapWrapper wrapper = new MapWrapper();
+                SharedPreferences pref = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
+                String wrapperStr = pref.getString(PASSWORD_SAFE, null);
+                wrapper = gson.fromJson(wrapperStr, MapWrapper.class);
+                HashMap<String, String> HtKpi = wrapper.getMyMap();
+                if(accExist){
+                    String hashP = HtKpi.get(username);
+                    //Check if password is the same
+                    if (hp.checkPassword(password, hashP)) {
+                        start(email);
+                    }
                 }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-
-            }));
-            //Boolean accountExist = mDb.checkAccount(getApplicationContext(), email, password);
-
+                startDialogBox();
+            }
             return true;
         }
 
@@ -479,49 +479,75 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     }
 
+    /**
+     * Check if the firebase reference listener is complete before moving on
+     * @param username
+     */
     private void checkListenerStatus(String username) {
         if (listenerCompleted) {
             if(accountExist){
-                DataBaseHelper mDB = new DataBaseHelper(getApplicationContext());
-                String uid = mDB.getUUID(username, getApplicationContext());
-                SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
-                final SharedPreferences.Editor edi = mypref.edit();
-                edi.putString(ACC_UID, uid);
-                edi.commit();
-                SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
-                final SharedPreferences.Editor editor = pref.edit();
-                String user = mDB.getUsername(username, getApplicationContext());
-                editor.putString(KEY, user);
-                editor.commit();
-                Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
-                startActivity(intent);
+                start(username);
             }else{
-                AlertDialog.Builder builder1 = new AlertDialog.Builder(LoginActivity.this);
-                builder1.setMessage("You have enter an incorrect username or password");
-                builder1.setCancelable(true);
-
-                builder1.setPositiveButton(
-                        "Sign Up",
-
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
-                                startActivity(intent);
-                            }
-                        });
-
-                builder1.setNegativeButton(
-                        "Try Again ?",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
-
-                AlertDialog alert11 = builder1.create();
-                alert11.show();
+                startDialogBox();
             }
         }
+    }
+
+    /**
+     * Start an intent to WelcomeActivity
+     * @param username
+     */
+    public void start(String username){
+        DataBaseHelper mDB = new DataBaseHelper(getApplicationContext());
+
+        //Get user id
+        String uid = mDB.getUUID(username, getApplicationContext());
+
+        //Store current logged in user id
+        SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
+        final SharedPreferences.Editor edi = mypref.edit();
+        edi.putString(ACC_UID, uid);
+        edi.commit();
+
+        //Store currently logged in username
+        SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+        final SharedPreferences.Editor editor = pref.edit();
+        String user = mDB.getUsername(username, getApplicationContext());
+        editor.putString(KEY, user);
+        editor.commit();
+
+        Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
+        startActivity(intent);
+    }
+
+    /**
+     * Start Alert Dialog Box
+     */
+    public void startDialogBox(){
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(LoginActivity.this);
+        builder1.setMessage("You have enter an incorrect username or password");
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "Sign Up",
+
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+                        startActivity(intent);
+                    }
+                });
+
+        builder1.setNegativeButton(
+                "Try Again ?",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
     }
 }
 

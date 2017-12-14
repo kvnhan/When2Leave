@@ -1,9 +1,8 @@
 package com.example.kiennhan.when2leave.model;
 
 /**
- * Created by Kien Nhan on 11/27/2017.
+ * Hold Date information
  */
-
 public class Date {
     private int month;
     private int date;

@@ -6,9 +6,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.util.ArrayList;
 
 /**
- * Created by Kien Nhan on 11/27/2017.
+ * Holds Account information
  */
-
 public class Account {
     private static int workload = 12;
     public String uid;
@@ -75,6 +74,11 @@ public class Account {
         this.password = password;
     }
 
+    /**
+     * Hash a password
+     * @param password_plaintext
+     * @return
+     */
     public String hashPassword(String password_plaintext) {
         String salt = BCrypt.gensalt(workload);
         String hashed_password = BCrypt.hashpw(password_plaintext, salt);
@@ -82,6 +86,12 @@ public class Account {
         return(hashed_password);
     }
 
+    /**
+     * Check if two password matches
+     * @param password_plaintext
+     * @param stored_hash
+     * @return
+     */
     public boolean checkPassword(String password_plaintext, String stored_hash) {
         boolean password_verified = false;
 

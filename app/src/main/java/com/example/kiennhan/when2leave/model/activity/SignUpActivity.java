@@ -29,8 +29,12 @@ import java.util.UUID;
 
 import database.DataBaseHelper;
 
+/**
+ * Sign Up screen
+ */
 public class SignUpActivity extends AppCompatActivity {
 
+    //UI references
     EditText mFirstName;
     EditText mLastName;
     EditText mEmailAddress;
@@ -41,22 +45,23 @@ public class SignUpActivity extends AppCompatActivity {
     Button mCreateAccount;
     DataBaseHelper mDB;
 
+    //Firebase references
     private DatabaseReference myRef;
     private FirebaseAuth firebaseAuth;
     private boolean accountExist = true;
+
+    //Background task
     private SignUpActivity.UserLoginTask mAuthTask = null;
+
+    //Keys for Sharepreferences
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String FIRST = "first";
-    private static final String FIRSTRUN = "firstrun";
     private static final String ACCOUNT = "account";
     private static final String UID = "uid";
     private static final String ACC_UID = "accuid";
     private static final String PASSWORD_SAFE = "passwordsafe";
     private static final String PW = "peace";
-    private static final String INBOX = "inbox";
-    private static final String INBOX_ID = "inboxID";
-
     private static final String USER_NAME_KEY= "USER_NAME_KEY";
     private static final String FIRST_NAME_KEY = "FIRST_NAME_KEY";
     private static final String LAST_NAME_KEY = "LAST_NAME_KEY";
@@ -67,7 +72,6 @@ public class SignUpActivity extends AppCompatActivity {
     private boolean passwordMatch = true;
 
     private Boolean listenerCompleted = false;
-    private Boolean signUpComplete = false;
     SharedPreferences pref = null;
 
     @Override
@@ -85,18 +89,12 @@ public class SignUpActivity extends AppCompatActivity {
         mCreateAccount = findViewById(R.id.createAccount);
 
         pref = getApplicationContext().getSharedPreferences(FIRST, MODE_PRIVATE);
-        /*
-        SharedPreferences spref = getApplicationContext().getSharedPreferences(INBOX, MODE_PRIVATE);
-        String uniqueINBOX = null;
-        if(spref.getString(INBOX_ID, null) == null){
-            uniqueINBOX = UUID.randomUUID().toString();
-            spref.edit().putString(INBOX_ID, null).commit();
-        }else{
-            uniqueINBOX = spref.getString(INBOX_ID, null);
-        }
-        */
+
+        mDB = new DataBaseHelper(getApplicationContext());
+
         myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
 
+        //Check if there was a configuration changes
         if(savedInstanceState != null){
             mFirstName.setText(savedInstanceState.getString(FIRST_NAME_KEY));
             mLastName.setText(savedInstanceState.getString(LAST_NAME_KEY));
@@ -117,6 +115,7 @@ public class SignUpActivity extends AppCompatActivity {
                 String emailAddress = mEmailAddress.getText().toString();
                 String phoneNumber = mPhoneNumber.getText().toString();
 
+                //Check if all field is valid
                 if(!checkField(firstName,lastName,userName,password,confirmPassword, emailAddress)){
                     return;
                 }
@@ -124,8 +123,6 @@ public class SignUpActivity extends AppCompatActivity {
                 Account newAccount = new Account(uniqueId, firstName, lastName, userName, emailAddress, password);
                 String hashPassord = newAccount.hashPassword(password);
                 mDB = new DataBaseHelper(getApplicationContext());
-
-                //accountExist = mDB.checkAccount(getApplicationContext(), userName, password);
 
                 if(password.length() < 7){
                     View focusView1 = null;
@@ -146,6 +143,8 @@ public class SignUpActivity extends AppCompatActivity {
                     focusView2.requestFocus();
                     passwordMatch = false;
                 }
+
+                //Check if the password match before moving on
                 if(passwordMatch && passwordValid) {
                     attemptLogin(newAccount, userName, emailAddress, hashPassord);
                 }
@@ -165,6 +164,16 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Check if all fields are filled
+     * @param firstname
+     * @param lastname
+     * @param username
+     * @param password
+     * @param cpassword
+     * @param email
+     * @return
+     */
     public boolean checkField(String firstname, String lastname, String username, String password, String cpassword, String email){
         boolean isready = true;
         if(firstname.equals("")){
@@ -219,12 +228,20 @@ public class SignUpActivity extends AppCompatActivity {
         return isready;
     }
 
+    /**
+     * Save account data over firebase
+     * @param account
+     * @param Hashpw
+     * @return
+     */
     private boolean saveUserInfo(Account account, String Hashpw){
-        String id = account.getUid();
 
+        //Get logged in user id
+        String id = account.getUid();
         Gson gson = new Gson();
         MapWrapper wrapper = new MapWrapper();
         SharedPreferences mypref = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
+
         //Get a Serialize HashMap
         String wrapperStr = mypref.getString(PASSWORD_SAFE, null);
         wrapper = gson.fromJson(wrapperStr, MapWrapper.class);
@@ -233,20 +250,17 @@ public class SignUpActivity extends AppCompatActivity {
             wrapper.setMyMap(new HashMap<String, String>());
         }
         HashMap<String, String> HtKpi = wrapper.getMyMap();
+
         // Put username and hash password in the hashmap
         HtKpi.put(account.getUserName(), Hashpw);
-        // Set the new map
+
+        // Set the new map and store that to PASSWORD_SAFE
         wrapper.setMyMap(HtKpi);
         String serializedMap = gson.toJson(wrapper);
         final SharedPreferences.Editor editor = mypref.edit();
         editor.putString(PASSWORD_SAFE, serializedMap);
         editor.commit();
-        /*
-        SharedPreferences pw = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
-        final SharedPreferences.Editor edi = pw.edit();
-        edi.putString(PASSWORD_SAFE, Hashpw);
-        edi.commit();
-        */
+
         account.setUid("");
         account.setPassword("");
         myRef.child(id).setValue(account);
@@ -263,47 +277,47 @@ public class SignUpActivity extends AppCompatActivity {
                     mEmailAddress.setError(null);
                     for (DataSnapshot child : children) {
                         AccountTest acoount = child.getValue(AccountTest.class);
+
+                        //Check if an account exist
                         if (acoount.getUserName().equals(username) && acoount.getEmail().equals(email)) {
-                            View focusView = null;
-                            View focusView2 = null;
-                            mUserName.setError(getString(R.string.UsedUsername));
-                            mEmailAddress.setError("You have already signed up with this email address");
-                            focusView = mUserName;
-                            focusView2 = mEmailAddress;
-                            focusView.requestFocus();
-                            focusView2.requestFocus();
+                            accTaken();
                             listenerCompleted = true;
                             accountExist = true;
                             break;
-                        } else if (acoount.getUserName().equals(username)) {
-                            View focusView = null;
-                            mUserName.setError(getString(R.string.UsedUsername));
-                            focusView = mUserName;
-                            focusView.requestFocus();
+                        }
+
+                        //Check if username is taken
+                        else if (acoount.getUserName().equals(username)) {
+                            userNameTaken();
                             listenerCompleted = true;
                             accountExist = true;
                             break;
-                        } else if (acoount.getEmail().equals(email)) {
-                            View focusView2 = null;
-                            mEmailAddress.setError("You have already signed up with this email address");
-                            focusView2 = mEmailAddress;
-                            focusView2.requestFocus();
+                        }
+
+                        //Check if an email was used
+                        else if (acoount.getEmail().equals(email)) {
+                            emailTaken();
                             listenerCompleted = true;
                             accountExist = true;
                             break;
-                        } else {
+                        }
+
+                        //The username and email is available for now
+                        else {
                             listenerCompleted = true;
                             accountExist = false;
                         }
                     }
-                }else{
+                }
+
+                //For when the database is empty to begin with
+                else {
                     listenerCompleted = true;
                     accountExist = false;
                     checkListenerStatus(username, newAccount, hashPassord);
                 }
-                checkListenerStatus(username, newAccount, hashPassord);
+                    checkListenerStatus(username, newAccount, hashPassord);
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
@@ -327,7 +341,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
+
             getUserData(username, emailAddress, acc , hashPw);
 
             return true;
@@ -344,6 +358,13 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Attempt to sign up for an account
+     * @param acc
+     * @param username
+     * @param emailAddress
+     * @param hashPw
+     */
     private void attemptLogin(Account acc, String username, String emailAddress, String hashPw) {
         if (mAuthTask != null) {
             return;
@@ -352,23 +373,80 @@ public class SignUpActivity extends AppCompatActivity {
         mAuthTask.execute((Void) null);
         }
 
+
+    /**
+     * Check if the firebase reference listener is complete before moving on
+     * @param username
+     * @param acc
+     * @param hashPw
+     */
     private void checkListenerStatus(String username, Account acc,String hashPw) {
         if (listenerCompleted) {
             if(!accountExist){
-                mDB.addAccount(getApplicationContext(), acc, hashPw);
-                SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
-                final SharedPreferences.Editor editor = pref.edit();
-                editor.putString(KEY, username);
-                editor.commit();
-                SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
-                final SharedPreferences.Editor edi = mypref.edit();
-                edi.putString(ACC_UID, acc.getUid());
-                edi.commit();
-                saveUserInfo(acc, hashPw);
-                Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
-                startActivity(intent);
+                start(username, acc, hashPw);
             }
         }
     }
 
+    /**
+     * Start WelcomeAcivity
+     * @param username
+     * @param acc
+     * @param hashPw
+     */
+    public void start(String username, Account acc,String hashPw){
+        mDB.addAccount(getApplicationContext(), acc, hashPw);
+
+        //Strore logged in username to KEY
+        SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+        final SharedPreferences.Editor editor = pref.edit();
+        editor.putString(KEY, username);
+        editor.commit();
+
+        //Store logged in user id to ACC_UID
+        SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
+        final SharedPreferences.Editor edi = mypref.edit();
+        edi.putString(ACC_UID, acc.getUid());
+        edi.commit();
+
+        //Save account information to firebase
+        saveUserInfo(acc, hashPw);
+
+        Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
+        startActivity(intent);
+    }
+
+    /**
+     * Error to username and email field when an account exist
+     */
+    public void accTaken(){
+        View focusView = null;
+        View focusView2 = null;
+        mUserName.setError(getString(R.string.UsedUsername));
+        mEmailAddress.setError("You have already signed up with this email address");
+        focusView = mUserName;
+        focusView2 = mEmailAddress;
+        focusView.requestFocus();
+        focusView2.requestFocus();
+    }
+
+    /**
+     * Error to username field when a username is taken
+     */
+    public void userNameTaken(){
+        View focusView = null;
+        mUserName.setError(getString(R.string.UsedUsername));
+        focusView = mUserName;
+        focusView.requestFocus();
+    }
+
+    /**
+     * Error to email field when an email is used
+     */
+    public void emailTaken(){
+        View focusView2 = null;
+        mEmailAddress.setError("You have already signed up with this email address");
+        focusView2 = mEmailAddress;
+        focusView2.requestFocus();
+    }
 }

@@ -3,9 +3,8 @@ package com.example.kiennhan.when2leave.model;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
- * Created by Kien Nhan on 12/9/2017.
+ * Holds Account inforamtion and for storing object data retrieved from firebase
  */
-
 public class AccountTest {
     private static int workload = 12;
     public String uid;

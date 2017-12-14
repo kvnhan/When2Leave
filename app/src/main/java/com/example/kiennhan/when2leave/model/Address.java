@@ -1,9 +1,8 @@
 package com.example.kiennhan.when2leave.model;
 
 /**
- * Created by Kien Nhan on 11/27/2017.
+ * Holds Address inforamtion
  */
-
 public class Address {
     private String id;
     private String streetNumber;
