@@ -32,6 +32,7 @@ import database.DataBaseHelper;
 
 public class ViewEventActivity extends AppCompatActivity {
 
+
     private static final String EVENTNAME = "eventname";
     private static final String LOCATIN = "location";
     private static final String TIME = "time";

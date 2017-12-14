@@ -252,8 +252,16 @@ public class When2Leave extends JobService {
                             Log.i("tester", travelSeconds+" seconds to arrive");
 
                             //show the notification if it's time to leave
-                            long timeDiff = (date.getTime()-new Date().getTime()) / 1000;
-                            long leftoverTime = timeDiff-travelSeconds;
+                            SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+                            Date meetingDate = null;
+                            Calendar today = Calendar.getInstance();
+                            try {
+                                meetingDate = format.parse(meeting.getDateOfMeeting() + " " + meeting.getTimeOfMeeting());
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            long timeDiff = (meetingDate.getTime() - today.getTime().getTime()) / 1000;
+                            long leftoverTime = timeDiff - (travelSeconds + 900);
                             Log.i("tester", leftoverTime+" seconds leftover");
                             if(leftoverTime < 60*15) {
                                 Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
@@ -309,31 +317,5 @@ public class When2Leave extends JobService {
             }
         }
 
-    }
-
-    public ArrayList<Meetings> timeToLeave(ArrayList<Meetings> lom) throws ParseException {
-        ArrayList<Meetings> leavingList = new ArrayList<Meetings>();
-
-        final Calendar mcurrentDate = Calendar.getInstance();
-        int mYear = mcurrentDate.get(Calendar.YEAR);
-        int mMonth=mcurrentDate.get(Calendar.MONTH);
-        int mDay=mcurrentDate.get(Calendar.DAY_OF_MONTH);
-
-        Calendar mcurrentTime = Calendar.getInstance();
-        int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
-        int minute = mcurrentTime.get(Calendar.MINUTE);
-
-        for(Meetings m: lom){
-            DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
-            Date startDate =  df.parse(m.getDateOfMeeting());
-            Calendar todayDate = Calendar.getInstance();
-            todayDate.setTime(startDate);
-            if(todayDate.get(Calendar.DAY_OF_MONTH) == mDay && todayDate.get(Calendar.MONTH) == mMonth){
-                //TODO: Compare current hour to arrival Time
-            }
-
-        }
-
-        return leavingList;
     }
 }

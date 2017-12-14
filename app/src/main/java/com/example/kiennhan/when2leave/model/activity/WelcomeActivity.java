@@ -191,7 +191,7 @@ public class WelcomeActivity extends AppCompatActivity {
             ComponentName componentName = new ComponentName(getApplicationContext(), When2Leave.class);
             JobInfo jobInfo = new JobInfo.Builder(1, componentName)
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                    .setPeriodic(5 * 1000)
+                    .setPeriodic(900000)
                     .setPersisted(true)
                     .build();
             int ret = jobScheduler.schedule(jobInfo);
@@ -345,7 +345,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 ComponentName componentName = new ComponentName(getApplicationContext(), When2Leave.class);
                 JobInfo jobInfo = new JobInfo.Builder(1, componentName)
                         .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                        .setPeriodic(5 * 1000)
+                        .setPeriodic(900000)
                         .setPersisted(true)
                         .build();
                 int ret = jobScheduler.schedule(jobInfo);
