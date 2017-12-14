@@ -98,6 +98,14 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
             mMeetings = m;
         }
 
+        public  void removeMeetings(Meetings meetings){
+            for(Meetings m: mMeetings){
+                if(m.getId().equals(meetings.getId())){
+                    mMeetings.remove(m);
+                }
+            }
+        }
+
     public void setOnItemClickListener(final OnItemClickListener item){
         this.onItemClickListener = item;
     }

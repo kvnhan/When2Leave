@@ -36,6 +36,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.kiennhan.when2leave.model.activity.wrapper.ListOfMeetings;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -86,6 +87,11 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
+    private static final String LOC_KEY = "lockey";
+    private static final String LIST = "list";
+    private static final String LOM = "listofmeeting";
+
+
     private boolean onWelcome = false;
 
     private FusedLocationProviderClient mFusedLocationClient;
@@ -105,6 +111,8 @@ public class WelcomeActivity extends AppCompatActivity {
     // The entry point to the Fused Location Provider.
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
+    private static final String LOC_PER = "LocationPermissionGranted";
+
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -175,6 +183,19 @@ public class WelcomeActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(WelcomeActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 108);
             }
+        }
+
+        SharedPreferences LOC_pref = getApplicationContext().getSharedPreferences(LOC_KEY, MODE_PRIVATE);
+        if(LOC_pref.getBoolean(LOC_PER, false)){
+            JobScheduler jobScheduler = (JobScheduler) getApplicationContext().getSystemService(getApplicationContext().JOB_SCHEDULER_SERVICE);
+            ComponentName componentName = new ComponentName(getApplicationContext(), When2Leave.class);
+            JobInfo jobInfo = new JobInfo.Builder(1, componentName)
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                    .setPeriodic(5 * 1000)
+                    .setPersisted(true)
+                    .build();
+            int ret = jobScheduler.schedule(jobInfo);
+            if (ret == JobScheduler.RESULT_SUCCESS) Log.d("FUCK", "Job scheduled again successfully!");
         }
     }
 
@@ -258,10 +279,18 @@ public class WelcomeActivity extends AppCompatActivity {
     private void updateUI() {
         mDB = new DataBaseHelper(getApplicationContext());
         SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+        SharedPreferences mypref = getApplicationContext().getSharedPreferences(LIST, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
         String uid = mDB.getUUID(userName, getApplicationContext());
 
         meetingsList = mDB.getWeeklyMeetings(uid, getApplicationContext());
+        ListOfMeetings lom = new ListOfMeetings();
+        lom.setMeetings(meetingsList);
+        Gson gson = new Gson();
+        String serializedMap = gson.toJson(lom);
+        SharedPreferences.Editor editor = mypref.edit();
+        editor.putString(LOM, serializedMap);
+        editor.commit();
         try {
             if (mEventAdapter == null) {
                 mEventAdapter = new DailyEventAdapter(getApplication(), meetingsList);
@@ -300,6 +329,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 intent.putExtra(TIME, time);
                 intent.putExtra(DATE, date);
                 intent.putExtra(DESC, desc);
+                intent.putExtra(MEETING_ID, meeting.getId());
                 startActivity(intent);
             }
         });
@@ -315,11 +345,15 @@ public class WelcomeActivity extends AppCompatActivity {
                 ComponentName componentName = new ComponentName(getApplicationContext(), When2Leave.class);
                 JobInfo jobInfo = new JobInfo.Builder(1, componentName)
                         .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                        .setPeriodic(15 * 60 * 1000)
+                        .setPeriodic(5 * 1000)
                         .setPersisted(true)
                         .build();
                 int ret = jobScheduler.schedule(jobInfo);
                 if (ret == JobScheduler.RESULT_SUCCESS) Log.d("FUCK", "Job scheduled successfully!");
+                SharedPreferences pref = getApplicationContext().getSharedPreferences(LOC_KEY, MODE_PRIVATE);
+                SharedPreferences.Editor edi = pref.edit();
+                edi.putBoolean(LOC_PER, true);
+                edi.commit();
             } else {
             }
             return;

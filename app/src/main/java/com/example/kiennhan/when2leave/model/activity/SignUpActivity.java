@@ -360,6 +360,10 @@ public class SignUpActivity extends AppCompatActivity {
                 final SharedPreferences.Editor editor = pref.edit();
                 editor.putString(KEY, username);
                 editor.commit();
+                SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
+                final SharedPreferences.Editor edi = mypref.edit();
+                edi.putString(ACC_UID, acc.getUid());
+                edi.commit();
                 saveUserInfo(acc, hashPw);
                 Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
                 startActivity(intent);

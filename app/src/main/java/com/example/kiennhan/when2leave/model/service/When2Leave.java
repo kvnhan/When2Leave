@@ -77,10 +77,20 @@ public class When2Leave extends JobService {
     private static final String CURR_LOCATION = "current";
     private static final String SAVE_LOCATION = "saveloc";
 
+    private static final String EVENTNAME = "eventname";
+    private static final String LOCATION = "location";
+    private static final String TIME = "time";
+    private static final String DATE = "date";
+    private static final String DESC = "description";
+    private static final String LETSGO = "letsgo";
+    private static final String LONG = "long";
+    private static final String LAT = "lat";
+
     public When2Leave() {
     }
 
     private JobParameters params;
+    com.example.kiennhan.when2leave.model.Location obj;
 
     @Override
     public boolean onStartJob(JobParameters params) {
@@ -90,7 +100,7 @@ public class When2Leave extends JobService {
         Gson gson = new Gson();
         if(locPref.getString(SAVE_LOCATION, null) != null) {
             String json = locPref.getString(SAVE_LOCATION, "");
-            com.example.kiennhan.when2leave.model.Location obj = gson.fromJson(json, com.example.kiennhan.when2leave.model.Location.class);
+            obj = gson.fromJson(json, com.example.kiennhan.when2leave.model.Location.class);
             Log.d("FUCK", "Long: " + obj.getLong() + ", Lat: " + obj.getLati());
         }
 
@@ -237,7 +247,8 @@ public class When2Leave extends JobService {
                         try {
                             JSONObject directions = new JSONObject(str);
                             int travelSeconds = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("duration").getInt("value");
-
+                            double longtitude = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("end_location").getDouble("lng");
+                            double latitude = directions.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONObject("end_location").getDouble("lat");
                             Log.i("tester", travelSeconds+" seconds to arrive");
 
                             //show the notification if it's time to leave
@@ -246,6 +257,19 @@ public class When2Leave extends JobService {
                             Log.i("tester", leftoverTime+" seconds leftover");
                             if(leftoverTime < 60*15) {
                                 Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
+                                String name = meeting.getTitle();
+                                String location = meeting.getDestination();
+                                String time = meeting.getTimeOfMeeting();
+                                String date = meeting.getDateOfMeeting();
+                                String desc = meeting.getDescription();
+                                resultIntent.putExtra(EVENTNAME, name);
+                                resultIntent.putExtra(LOCATION, location);
+                                resultIntent.putExtra(TIME, time);
+                                resultIntent.putExtra(DATE, date);
+                                resultIntent.putExtra(DESC, desc);
+                                resultIntent.putExtra(LONG, longtitude);
+                                resultIntent.putExtra(LAT, latitude);
+                                resultIntent.putExtra(LETSGO, true);
                                 PendingIntent resultPendingIntent =
                                         PendingIntent.getActivity(
                                                 When2Leave.this,

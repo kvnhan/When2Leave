@@ -200,7 +200,7 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         if (selectedMinute < 10) {
                             mTime.setText(selectedHour + ":0" + selectedMinute);
-                            timeOfmeeting = ( selectedHour + ":" + selectedMinute);
+                            timeOfmeeting = ( selectedHour + ":0" + selectedMinute);
                         } else {
                             mTime.setText(selectedHour + ":" + selectedMinute);
                             timeOfmeeting = ( selectedHour + ":" + selectedMinute);
