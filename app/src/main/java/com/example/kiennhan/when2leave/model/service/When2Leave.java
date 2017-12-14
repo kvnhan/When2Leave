@@ -85,6 +85,8 @@ public class When2Leave extends JobService {
     private static final String LETSGO = "letsgo";
     private static final String LONG = "long";
     private static final String LAT = "lat";
+    private static final String MEETING_ID = "meetingid";
+
 
     public When2Leave() {
     }
@@ -277,6 +279,7 @@ public class When2Leave extends JobService {
                                 resultIntent.putExtra(DESC, desc);
                                 resultIntent.putExtra(LONG, longtitude);
                                 resultIntent.putExtra(LAT, latitude);
+                                resultIntent.putExtra(MEETING_ID, meeting.getId());
                                 resultIntent.putExtra(LETSGO, true);
                                 PendingIntent resultPendingIntent =
                                         PendingIntent.getActivity(

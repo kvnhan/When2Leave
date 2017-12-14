@@ -64,6 +64,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
     private RecyclerView mRecyclerView;
     private DailyEventAdapter mEventAdapter;
+    DataBaseHelper mDB;
     com.example.kiennhan.when2leave.model.Location obj;
 
     private static final String CURR_LOCATION = "current";
@@ -109,6 +110,17 @@ public class ViewEventActivity extends AppCompatActivity {
         if (intent.getBooleanExtra(LETSGO, false)) {
             mEdit.setText("LET'S GO");
         }
+
+        Gson gson = new Gson();
+        SharedPreferences listpref = getApplicationContext().getSharedPreferences(LIST, MODE_PRIVATE);
+        String listStr = listpref.getString(LOM, null);
+        ListOfMeetings lom = new ListOfMeetings();
+        lom = gson.fromJson(listStr, ListOfMeetings.class);
+        mRecyclerView = (RecyclerView) findViewById(R.id.daily_event);
+        mEventAdapter = new DailyEventAdapter(getApplicationContext(), lom.getMeetings());
+        mEventAdapter.setMeetings(lom.getMeetings());
+        mEventAdapter.notifyDataSetChanged();
+
         mEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -140,34 +152,26 @@ public class ViewEventActivity extends AppCompatActivity {
                                 }
                             }).show();
 
-                }
+                }else {
 
-                Intent intent2 = new Intent(ViewEventActivity.this, CreateEventActivity.class);
-                intent2.putExtra(EVENTNAME, name);
-                intent2.putExtra(LOCATIN, loc);
-                intent2.putExtra(TIME, time);
-                intent2.putExtra(DATE, date);
-                intent2.putExtra(DESC, desc);
-                intent2.putExtra(MEETING_ID, id);
-                intent2.putExtra(TWO_CLICK, 1);
-                startActivity(intent2);
+                    Intent intent2 = new Intent(ViewEventActivity.this, CreateEventActivity.class);
+                    intent2.putExtra(EVENTNAME, name);
+                    intent2.putExtra(LOCATIN, loc);
+                    intent2.putExtra(TIME, time);
+                    intent2.putExtra(DATE, date);
+                    intent2.putExtra(DESC, desc);
+                    intent2.putExtra(MEETING_ID, id);
+                    intent2.putExtra(TWO_CLICK, 1);
+                    startActivity(intent2);
+                }
 
             }
         });
     }
         public void updateDatabase(Meetings meeting){
-        Gson gson = new Gson();
-        SharedPreferences listpref = getApplicationContext().getSharedPreferences(LIST, MODE_PRIVATE);
-        String listStr = listpref.getString(LOM, null);
-        ListOfMeetings lom = new ListOfMeetings();
-        lom = gson.fromJson(listStr, ListOfMeetings.class);
-
-        DataBaseHelper mDB = new DataBaseHelper(getApplicationContext());
+        mDB = new DataBaseHelper(getApplicationContext());
         mDB.deleteEvent(getApplicationContext(), meeting);
-        mRecyclerView = (RecyclerView) findViewById(R.id.daily_event);
-        mEventAdapter = new DailyEventAdapter(getApplicationContext(), lom.getMeetings());
-        mEventAdapter.setMeetings(lom.getMeetings());
-        mEventAdapter.notifyDataSetChanged();
+
         mEventAdapter.removeMeetings(meeting);
         mEventAdapter.notifyDataSetChanged();
 

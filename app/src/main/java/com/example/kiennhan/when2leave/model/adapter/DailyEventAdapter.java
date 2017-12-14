@@ -16,6 +16,7 @@ import com.example.kiennhan.when2leave.model.activity.R;
 import com.example.kiennhan.when2leave.model.activity.ViewEventActivity;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static android.support.v4.content.ContextCompat.startActivity;
@@ -99,9 +100,12 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
         }
 
         public  void removeMeetings(Meetings meetings){
-            for(Meetings m: mMeetings){
-                if(m.getId().equals(meetings.getId())){
-                    mMeetings.remove(m);
+            Iterator<Meetings> iter = mMeetings.iterator();
+            while(iter.hasNext()){
+                Meetings m = iter.next();
+                if( m.getId().equals(meetings.getId()) )
+                {
+                    iter.remove();
                 }
             }
         }
