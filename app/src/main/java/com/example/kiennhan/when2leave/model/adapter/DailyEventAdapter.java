@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -42,6 +43,7 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
             private TextView mTitleTextView;
             private TextView mDateTextView;
             private TextView mTimeTextView;
+            private ImageView mImageBox;
 
             public LinearLayout eventlayout;
 
@@ -61,6 +63,7 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
                 mTitleTextView = (TextView) itemView.findViewById(R.id.fragment_event_name);
                 mDateTextView = (TextView) itemView.findViewById(R.id.fragment_event_date);
                 mTimeTextView = (TextView) itemView.findViewById(R.id.fragment_event_time);
+                mImageBox = (ImageView) itemView.findViewById(R.id.completeCheck);
             }
 
             /**
@@ -69,6 +72,9 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
              */
             public void bind(Meetings meeting) {
                 mMeeting = meeting;
+                if(mMeeting.getComplete()){
+                    mImageBox.setVisibility(View.VISIBLE);
+                }
                 mTitleTextView.setText(mMeeting.getTitle());
                 mDateTextView.setText(mMeeting.getDateOfMeeting());
                 mTimeTextView.setText(mMeeting.getTimeOfMeeting());
@@ -101,19 +107,25 @@ public class DailyEventAdapter  extends RecyclerView.Adapter<DailyEventAdapter.D
 
     /**
      * Remove meeting from a list of meetings
-     * @param meetings
      */
-    public  void removeMeetings(Meetings meetings){
+    public  void removeCompletedMeetings(){
             Iterator<Meetings> iter = mMeetings.iterator();
             while(iter.hasNext()){
                 Meetings m = iter.next();
-                if( m.getId().equals(meetings.getId()) )
+                if( m.getComplete())
                 {
                     iter.remove();
                 }
             }
         }
 
+        public void setCompleteMeeting(Meetings meetings){
+            for(Meetings m: mMeetings){
+                if(m.getId().equals(meetings.getId())){
+                    m.setComplete(true);
+                }
+            }
+        }
     /**
      * Listen to item
      * @param item

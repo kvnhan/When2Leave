@@ -92,7 +92,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
     private boolean accExist = false;
-    private TextView mRegister;
+    private TextView mRegister, mGuest;
     private String email;
     private String password;
 
@@ -157,6 +157,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
         mRegister = findViewById(R.id.register);
+        mGuest = findViewById(R.id.guest);
+        mGuest.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
+                intent.putExtra("GUEST", true);
+                SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                final SharedPreferences.Editor editor = pref.edit();
+                editor.putString(KEY, "only_guest");
+                editor.commit();
+                startActivity(intent);
+            }
+        });
         mRegister.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -289,7 +303,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private boolean isPasswordValid(String password) {
-        return password.length() > 7;
+        return password.length() >= 7;
     }
 
     /**
@@ -428,6 +442,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                     listenerCompleted = true;
                                     accountExist = true;
                                     break;
+                                }else{
+                                    startDialogBox();
                                 }
                             } else {
                                 listenerCompleted = true;
@@ -458,6 +474,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     //Check if password is the same
                     if (hp.checkPassword(password, hashP)) {
                         start(email);
+                    }else{
+                        startDialogBox();
                     }
                 }
 

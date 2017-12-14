@@ -130,6 +130,8 @@ public class SignUpActivity extends AppCompatActivity {
                     focusView1 = mPassword;
                     focusView1.requestFocus();
                     passwordValid = false;
+                }else{
+                    passwordValid = true;
                 }
 
                 if(!password.equals(confirmPassword)){
@@ -142,6 +144,8 @@ public class SignUpActivity extends AppCompatActivity {
                     focusView2 = mPasswordConfirm;
                     focusView2.requestFocus();
                     passwordMatch = false;
+                }else{
+                    passwordMatch = true;
                 }
 
                 //Check if the password match before moving on

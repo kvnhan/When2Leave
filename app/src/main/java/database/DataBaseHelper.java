@@ -80,6 +80,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Add a new account to when2leave.db
+     *
      * @param context
      * @param account
      * @param hash
@@ -96,6 +97,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Add an address to the when2leave.db
+     *
      * @param context
      * @param address
      * @param account
@@ -111,6 +113,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Add a meeting to when2leave.db
+     *
      * @param context
      * @param account
      * @param meetings
@@ -124,6 +127,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Query for an address
+     *
      * @param context
      * @param id
      * @return
@@ -153,6 +157,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Query for an existing account
+     *
      * @param context
      * @param id
      * @return
@@ -169,7 +174,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String lastName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.LAST_NAME));
         String userName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.USER_NAME));
         String email = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.EMAIL));
-        Account account = new Account(id,firstName,lastName,userName,email, "");
+        Account account = new Account(id, firstName, lastName, userName, email, "");
 
         cursor.close();
         mDatabase.close();
@@ -184,7 +189,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 new String[]{username}
         );
 
-        if(cursor.getCount() == 0){
+        if (cursor.getCount() == 0) {
             mDatabase.close();
             cursor.close();
             cursor = queryDatabase(DbSchema.AccountTable.NAME,
@@ -198,7 +203,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String userName = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.USER_NAME));
         String email = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.EMAIL));
         String uid = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.UID));
-        Account account = new Account(uid,firstName,lastName,userName,email, "");
+        Account account = new Account(uid, firstName, lastName, userName, email, "");
 
         cursor.close();
         mDatabase.close();
@@ -208,6 +213,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Query when2leave.db
+     *
      * @param tableName
      * @param whereClause
      * @param whereArgs
@@ -230,6 +236,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Put account values in Content Values in order to add to when2leave.db
+     *
      * @param account
      * @param hashPassword
      * @return
@@ -247,6 +254,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Put address values in Content Values in order to add to when2leave.db
+     *
      * @param address
      * @param account
      * @param isSchedule
@@ -261,7 +269,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(DbSchema.AddressTable.Cols.CITY, address.getCity());
         values.put(DbSchema.AddressTable.Cols.ZIPCODE, address.getZipCode());
         values.put(DbSchema.AddressTable.Cols.UID, account.getUid());
-        if(isSchedule){
+        if (isSchedule) {
             values.put(DbSchema.AddressTable.Cols.ID, meetings.getId());
         }
         return values;
@@ -269,6 +277,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Put meeting values in Content Values in order to add to when2leave.db
+     *
      * @param meetings
      * @param account
      * @return
@@ -289,18 +298,19 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Check if an account exist in when2leave.db
+     *
      * @param context
      * @param username
      * @param password
      * @return
      */
-    public boolean checkAccount(Context context, String username, String password){
+    public boolean checkAccount(Context context, String username, String password) {
         Boolean accountExist = false;
         Boolean usernameExist = checkUsername(context, username, password);
         Boolean emailExist = checkEmail(context, username, password);
 
-        if(usernameExist || emailExist){
-            if(correctPw) {
+        if (usernameExist || emailExist) {
+            if (correctPw) {
                 accountExist = true;
             }
         }
@@ -310,23 +320,24 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Check if username is used
+     *
      * @param context
      * @param username
      * @param password
      * @return
      */
-    public boolean checkUsername(Context context, String username, String password){
+    public boolean checkUsername(Context context, String username, String password) {
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
         DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
                 DbSchema.AccountTable.Cols.USER_NAME + "=?",
                 new String[]{username}
         );
 
-        if(cursor.getCount() > 0){
+        if (cursor.getCount() > 0) {
             cursor.moveToNext();
             String hashedpw = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.PASSWORD));
             Password pw = new Password();
-            correctPw = pw.checkPassword(password,hashedpw);
+            correctPw = pw.checkPassword(password, hashedpw);
             mDatabase.close();
             cursor.close();
             return true;
@@ -339,23 +350,24 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Check if an email was used
+     *
      * @param context
      * @param email
      * @param password
      * @return
      */
-    public boolean checkEmail(Context context, String email, String password){
+    public boolean checkEmail(Context context, String email, String password) {
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
         DataCursorWrapper cursor = queryDatabase(DbSchema.AccountTable.NAME,
                 DbSchema.AccountTable.Cols.EMAIL + "=?",
                 new String[]{email}
         );
 
-        if(cursor.getCount() > 0){
+        if (cursor.getCount() > 0) {
             cursor.moveToNext();
             String hashedpw = cursor.getString(cursor.getColumnIndex(DbSchema.AccountTable.Cols.PASSWORD));
             Password pw = new Password();
-            correctPw = pw.checkPassword(password,hashedpw);
+            correctPw = pw.checkPassword(password, hashedpw);
             mDatabase.close();
             cursor.close();
             return true;
@@ -368,19 +380,20 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Get the user id
+     *
      * @param username
      * @param context
      * @return
      */
-    public String getUUID(String username, Context context){
+    public String getUUID(String username, Context context) {
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
         DataCursorWrapper cursor;
-        if(username.contains("@")){
+        if (username.contains("@")) {
             cursor = queryDatabase(DbSchema.AccountTable.NAME,
                     DbSchema.AccountTable.Cols.EMAIL + "=?",
                     new String[]{username}
             );
-        }else {
+        } else {
             cursor = queryDatabase(DbSchema.AccountTable.NAME,
                     DbSchema.AccountTable.Cols.USER_NAME + "=?",
                     new String[]{username}
@@ -396,19 +409,20 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Get username
+     *
      * @param username
      * @param context
      * @return
      */
-    public String getUsername(String username, Context context){
+    public String getUsername(String username, Context context) {
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
         DataCursorWrapper cursor;
-        if(username.contains("@")){
+        if (username.contains("@")) {
             cursor = queryDatabase(DbSchema.AccountTable.NAME,
                     DbSchema.AccountTable.Cols.EMAIL + "=?",
                     new String[]{username}
             );
-        }else{
+        } else {
             return username;
         }
         cursor.moveToNext();
@@ -421,11 +435,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Get Meeting ID
+     *
      * @param uid
      * @param context
      * @return
      */
-    public String getMeetingsID(String uid, Context context){
+    public String getMeetingsID(String uid, Context context) {
         String eventID = "";
         mDatabase = new DataBaseHelper(context).getReadableDatabase();
         DataCursorWrapper cursor = queryDatabase(DbSchema.MeetingTable.NAME,
@@ -433,7 +448,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 new String[]{uid}
         );
 
-        if(cursor.getCount() > 0) {
+        if (cursor.getCount() > 0) {
             cursor.moveToFirst();
             eventID = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ID));
         }
@@ -444,11 +459,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Query for a list of meetings
+     *
      * @param uid
      * @param context
      * @return
      */
-    public ArrayList<Meetings> getMeetings(String uid, Context context){
+    public ArrayList<Meetings> getMeetings(String uid, Context context) {
         ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
         ArrayList<String> DateAndTimeList = new ArrayList<String>();
         HashMap<String, String> dateAndtimeKey = new HashMap<String, String>();
@@ -472,7 +488,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 String description = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESCRIPTION));
                 String isComplete = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ISCOMPLETE));
                 Boolean isDone = false;
-                if(isComplete.equals("true")){
+                if (isComplete.equals("true")) {
                     isDone = true;
                 }
                 Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description, isDone);
@@ -489,6 +505,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         mDatabase.close();
         Collections.sort(DateAndTimeList, new Comparator<String>() {
             DateFormat f = new SimpleDateFormat("MM/dd/yyyy '@'hh:mm");
+
             @Override
             public int compare(String o1, String o2) {
                 try {
@@ -499,7 +516,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             }
         });
 
-        for(String s: DateAndTimeList){
+        for (String s : DateAndTimeList) {
             Meetings m = meetingKey.get(dateAndtimeKey.get(s));
             meetingsList.add(m);
         }
@@ -508,11 +525,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Query for a list of weekly meetings
+     *
      * @param uid
      * @param context
      * @return
      */
-    public ArrayList<Meetings> getWeeklyMeetings(String uid, Context context){
+    public ArrayList<Meetings> getWeeklyMeetings(String uid, Context context) {
         ArrayList<Meetings> meetingsList = new ArrayList<Meetings>();
         ArrayList<String> DateAndTimeList = new ArrayList<String>();
         HashMap<String, String> dateAndtimeKey = new HashMap<String, String>();
@@ -542,17 +560,17 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 String description = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.DESCRIPTION));
                 String isComplete = cursor.getString(cursor.getColumnIndex(DbSchema.MeetingTable.Cols.ISCOMPLETE));
                 Boolean isDone = false;
-                if(isComplete.equals("true")){
+                if (isComplete.equals("true")) {
                     isDone = true;
                 }
                 Meetings newMeeting = new Meetings(eventID, eventname, null, eventTime, eventDate, null, eventLocation, description, isDone);
                 //meetingsList.add(newMeeting);
                 DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
-                Date startDate=null;
+                Date startDate = null;
                 startDate = df.parse(eventDate);
                 Calendar todayDate = Calendar.getInstance();
                 todayDate.setTime(startDate);
-                if(todayDate.get(Calendar.DAY_OF_MONTH) >= firstday && todayDate.get(Calendar.DAY_OF_MONTH) <= lastday) {
+                if (todayDate.get(Calendar.DAY_OF_MONTH) >= firstday && todayDate.get(Calendar.DAY_OF_MONTH) <= lastday) {
                     DateAndTimeList.add(eventDate + " @" + eventTime);
                     dateAndtimeKey.put(eventDate + " @" + eventTime, eventID);
                     meetingKey.put(eventID, newMeeting);
@@ -566,7 +584,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
 
         mDatabase.close();
-        if(DateAndTimeList.size() > 0) {
+        if (DateAndTimeList.size() > 0) {
             Collections.sort(DateAndTimeList, new Comparator<String>() {
                 DateFormat f = new SimpleDateFormat("MM/dd/yyyy '@'hh:mm");
 
@@ -581,7 +599,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             });
         }
 
-        for(String s: DateAndTimeList){
+        for (String s : DateAndTimeList) {
             Meetings m = meetingKey.get(dateAndtimeKey.get(s));
             meetingsList.add(m);
         }
@@ -590,10 +608,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Update meeting data
+     *
      * @param context
      * @param updatedMeeting
      */
-    public void updateEvent(Context context, Meetings updatedMeeting){
+    public void updateEvent(Context context, Meetings updatedMeeting) {
         mDatabase = new DataBaseHelper(context).getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DbSchema.MeetingTable.Cols.TITLE, updatedMeeting.getTitle());
@@ -611,13 +630,30 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     /**
      * Delete meeting data
+     *
      * @param context
      * @param deletedMeeting
      */
-    public void deleteEvent(Context context, Meetings deletedMeeting){
+    public void deleteEvent(Context context, Meetings deletedMeeting) {
         mDatabase = new DataBaseHelper(context).getWritableDatabase();
         mDatabase.delete(DbSchema.MeetingTable.NAME, DbSchema.MeetingTable.Cols.ID + "=?",
                 new String[]{deletedMeeting.getId()});
         mDatabase.close();
     }
+
+    public int getCount(Context context, String uid) {
+        mDatabase = new DataBaseHelper(context).getReadableDatabase();
+
+        DataCursorWrapper cursor = queryDatabase(DbSchema.MeetingTable.NAME,
+                DbSchema.MeetingTable.Cols.UID + "=?",
+                new String[]{uid}
+        );
+
+        int count = cursor.getCount();
+
+        cursor.close();
+        mDatabase.close();
+        return count;
+    }
+
 }

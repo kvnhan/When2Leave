@@ -1,25 +1,15 @@
 package com.example.kiennhan.when2leave.model.activity;
 
-import android.*;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NavUtils;
-import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -29,41 +19,20 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.example.kiennhan.when2leave.model.Account;
-import com.example.kiennhan.when2leave.model.Address;
-import com.example.kiennhan.when2leave.model.Date;
 import com.example.kiennhan.when2leave.model.Meetings;
-import com.example.kiennhan.when2leave.model.Time;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceDetectionClient;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
-import com.google.android.gms.location.places.PlaceLikelihoodBufferResponse;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.UUID;
 
 import database.DataBaseHelper;
@@ -245,10 +214,16 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Store the username at KEY
+                //Get the username at KEY
                 SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
                 String userName = pref.getString(KEY, null);
-                Account account = mDB.getAccountWithUserName(getApplicationContext(), userName);
+                Account account ;
+                //Check if user is a guest
+                if(userName.equals("only_guest")){
+                    account = new Account("just_guest", "","", "only_guest", "", "");
+                }else {
+                    account = mDB.getAccountWithUserName(getApplicationContext(), userName);
+                }
 
                 //Create a unique id for event
                 meetingID = UUID.randomUUID().toString() + "_" + userName;
@@ -258,7 +233,6 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
 
                 //check if all fields are filled before moving on
                 if(isReady) {
-
                     //If the event need to be updates
                     if(intent.getIntExtra(TWO_CLICK, 0) == 1){
                         meeting = new Meetings(finalId, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString(), false);
@@ -267,14 +241,46 @@ public class CreateEventActivity extends AppCompatActivity implements GoogleApiC
                         startActivity(intent);
                     }else {
                         meeting = new Meetings(meetingID, eventName, account, timeOfmeeting, dateOfMeeting, "", event_Location, mDescription.getText().toString(), false);
-                        mDB.addMeeting(getApplicationContext(), account, meeting);
-                        Toast.makeText(getApplicationContext(), "Meeting Data Added", Toast.LENGTH_LONG).show();
-                        Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
-                        startActivity(intent);
+
+                        //Check if user is a guest
+                        if (userName.equals("only_guest")) {
+                            int count = mDB.getCount(getApplicationContext(), "just_guest");
+
+                            //Guest user can only store up to 4 events
+                            if(count < 4){
+                                mDB.addMeeting(getApplicationContext(), account, meeting);
+                                Toast.makeText(getApplicationContext(), "Meeting is Created", Toast.LENGTH_LONG).show();
+                                Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
+                                startActivity(intent);
+                            }else {
+                                AlertDialog.Builder builder1 = new AlertDialog.Builder(CreateEventActivity.this);
+                                builder1.setMessage("You have reach the limit as a Guest User. Create an account to increase that limit");
+                                builder1.setCancelable(false);
+
+                                builder1.setPositiveButton(
+                                        "OK",
+
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        });
+                                AlertDialog alert11 = builder1.create();
+                                alert11.show();
+                            }
+                        } else{
+                            mDB.addMeeting(getApplicationContext(), account, meeting);
+                            Toast.makeText(getApplicationContext(), "Meeting is Created", Toast.LENGTH_LONG).show();
+                            Intent intent = new Intent(CreateEventActivity.this, WelcomeActivity.class);
+                            startActivity(intent);
+                        }
                     }
 
                     //Save the event to firebase database
-                    saveMeetingInfo(account, meeting);
+                    if(!userName.equals("only_guest")) {
+                        saveMeetingInfo(account, meeting);
+                    }
 
                 }
 

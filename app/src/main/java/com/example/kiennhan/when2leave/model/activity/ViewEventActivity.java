@@ -196,9 +196,6 @@ public class ViewEventActivity extends AppCompatActivity {
         mDB = new DataBaseHelper(getApplicationContext());
         mDB.deleteEvent(getApplicationContext(), meeting);
 
-        mEventAdapter.removeMeetings(meeting);
-        mEventAdapter.notifyDataSetChanged();
-
         SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
         String uid = mypref.getString(ACC_UID, null);
 

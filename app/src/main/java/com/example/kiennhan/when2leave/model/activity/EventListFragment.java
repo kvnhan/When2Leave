@@ -12,6 +12,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,10 +69,14 @@ public class EventListFragment extends Fragment {
         //Get User name of current login username
         SharedPreferences pref = getContext().getSharedPreferences(PREF, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
-        String uid = mDB.getUUID(userName, getContext());
+        String uid = "";
+        if(!userName.equals("only_guest")){
+            uid = mDB.getUUID(userName, getContext());
+            myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT + "/" + uid);
 
-        //Make a reference to firebase under "account/USERID"
-        myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT + "/" + uid);
+        }else{
+            uid = "just_guest";
+        }
 
         //Initialize the recycler view
         mRecyclerView = (RecyclerView) view.findViewById(R.id.e_recycler_view);
@@ -105,7 +110,13 @@ public class EventListFragment extends Fragment {
     private void updateUI() {
         SharedPreferences pref = getContext().getSharedPreferences(PREF, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
-        String uid = mDB.getUUID(userName, getContext());
+
+        String uid;
+        if(!userName.equals("only_guest")){
+            uid = mDB.getUUID(userName, getContext());
+        }else{
+            uid = "just_guest";
+        }
         meetingsList = mDB.getMeetings(uid, getContext());
 
         if (mAdapter == null) {
@@ -141,11 +152,15 @@ public class EventListFragment extends Fragment {
                                 public void onClick(DialogInterface dialog, int whichButton) {
                                     Meetings meeting = meetingsList.get(position);
                                     meeting.setComplete(true);
-                                    myRef.child(meeting.getId()).setValue(meeting);
+                                    SharedPreferences pref = getContext().getSharedPreferences(PREF, MODE_PRIVATE);
+                                    String userName = pref.getString(KEY, null);
+                                    if(!userName.equals("only_guest")){
+                                        myRef.child(meeting.getId()).setValue(meeting);
+                                    }
                                     mDB.deleteEvent(getContext(), meeting);
                                     meetingsList.remove(position);
                                     mRecyclerView.getAdapter().notifyItemRemoved(position);
-                                    Toast.makeText(getActivity(), "Deleted", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getActivity(), "Deleted " + meeting.getTitle(), Toast.LENGTH_SHORT).show();
                                 }})
                             .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                                 @Override
@@ -187,6 +202,7 @@ public class EventListFragment extends Fragment {
             private TextView mTitleTextView;
             private TextView mDateTextView;
             private TextView mTimeTextView;
+            private ImageView mViewImage;
 
 
             public EventHolder(LayoutInflater inflater, ViewGroup parent) {
@@ -196,6 +212,8 @@ public class EventListFragment extends Fragment {
                 mTitleTextView = (TextView) itemView.findViewById(R.id.fragment_event_name);
                 mDateTextView = (TextView) itemView.findViewById(R.id.fragment_event_date);
                 mTimeTextView = (TextView) itemView.findViewById(R.id.fragment_event_time);
+                mViewImage = (ImageView) itemView.findViewById(R.id.completeCheck);
+
             }
 
             /**
@@ -204,6 +222,9 @@ public class EventListFragment extends Fragment {
              */
             public void bind(Meetings meeting) {
                 mMeeting = meeting;
+                if(mMeeting.getComplete()){
+                    mViewImage.setVisibility(View.VISIBLE);
+                }
                 mTitleTextView.setText(mMeeting.getTitle());
                 mDateTextView.setText(mMeeting.getDateOfMeeting());
                 mTimeTextView.setText(mMeeting.getTimeOfMeeting());

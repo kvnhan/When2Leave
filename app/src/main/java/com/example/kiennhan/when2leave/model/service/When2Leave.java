@@ -16,11 +16,14 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 import com.example.kiennhan.when2leave.model.Meetings;
 import com.example.kiennhan.when2leave.model.activity.R;
 import com.example.kiennhan.when2leave.model.activity.ViewEventActivity;
+import com.example.kiennhan.when2leave.model.activity.wrapper.ListOfMeetings;
+import com.example.kiennhan.when2leave.model.adapter.DailyEventAdapter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -82,7 +85,12 @@ public class When2Leave extends JobService {
     private static final String LONG = "long";
     private static final String LAT = "lat";
     private static final String MEETING_ID = "meetingid";
+    private static final String LOM = "listofmeeting";
+    private static final String LISTOFMEET = "list";
 
+
+    private RecyclerView mRecyclerView;
+    private DailyEventAdapter mEventAdapter;
 
     //Google API
     private GoogleApiClient mGoogleApiClient;
@@ -135,11 +143,27 @@ public class When2Leave extends JobService {
             Meetings meeting = null;
             Date date = null;
 
+            Gson gson = new Gson();
+            SharedPreferences listpref = getApplicationContext().getSharedPreferences(LISTOFMEET, MODE_PRIVATE);
+            String listStr = listpref.getString(LOM, null);
+            ListOfMeetings lom = new ListOfMeetings();
+            lom = gson.fromJson(listStr, ListOfMeetings.class);
+            if(lom != null) {
+                mEventAdapter = new DailyEventAdapter(getApplicationContext(), lom.getMeetings());
+                mEventAdapter.removeCompletedMeetings();
+                mEventAdapter.notifyDataSetChanged();
+            }
+
             // Get a list of weekly events
             mDB = new DataBaseHelper(When2Leave.this);
             SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
             String userName = pref.getString(KEY, null);
-            String uid = mDB.getUUID(userName, When2Leave.this);
+            String uid;
+            if(!userName.equals("only_guest")){
+                uid = mDB.getUUID(userName, When2Leave.this);
+            }else{
+                uid = "just_guest";
+            }
             ArrayList<Meetings> meetingsList = mDB.getWeeklyMeetings(uid, getApplicationContext());
 
             //select the next upcoming meeting
@@ -267,8 +291,20 @@ public class When2Leave extends JobService {
                             long timeDiff = (meetingDate.getTime() - today.getTime().getTime()) / 1000;
                             long leftoverTime = timeDiff - (travelSeconds + 900);
                             Log.d("FUCK", leftoverTime+" seconds leftover");
+
                             if(leftoverTime < 60*15) {
                                 Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
+
+                                Gson gson = new Gson();
+                                SharedPreferences listpref = getApplicationContext().getSharedPreferences(LISTOFMEET, MODE_PRIVATE);
+                                String listStr = listpref.getString(LOM, null);
+                                ListOfMeetings lom = new ListOfMeetings();
+                                lom = gson.fromJson(listStr, ListOfMeetings.class);
+                                if(lom != null) {
+                                    mEventAdapter = new DailyEventAdapter(getApplicationContext(), lom.getMeetings());
+                                    mEventAdapter.setCompleteMeeting(meeting);
+                                    mEventAdapter.notifyDataSetChanged();
+                                }
 
                                 //Store meeting info in resultIntent
                                 String name = meeting.getTitle();

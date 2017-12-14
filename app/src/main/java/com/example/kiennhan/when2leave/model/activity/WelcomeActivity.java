@@ -92,7 +92,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private static final String KEY = "isLogin";
     private static final String PREF = "MyPref";
     private static final String LOC_KEY = "lockey";
-    private static final String LIST = "list";
+    private static final String LISTOFMEET = "list";
     private static final String LOM = "listofmeeting";
     private static final String EVENTNAME = "eventname";
     private static final String LOCATION = "location";
@@ -157,13 +157,25 @@ public class WelcomeActivity extends AppCompatActivity {
             }
         });
 
+        Intent intent = getIntent();
+
         //Get user name from a store value at KEY
         SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
-        Resources res = getResources();
-        String text = String.format(res.getString(R.string.Welcome), userName);
-        mWelcome = (TextView)findViewById(R.id.welcome);
-        mWelcome.setText(text);
+
+        if(intent.getBooleanExtra("GUEST", false) || userName.equals("only_guest")){
+            mWelcome = (TextView)findViewById(R.id.welcome);
+            mWelcome.setText("Guest");
+            SharedPreferences mpref = getApplicationContext().getSharedPreferences("LoginGuest", MODE_PRIVATE);
+            SharedPreferences.Editor edi = mpref.edit();
+            edi.putBoolean("ARE_YOU_A_GUEST", true);
+            edi.commit();
+        }else {
+            Resources res = getResources();
+            String text = String.format(res.getString(R.string.Welcome), userName);
+            mWelcome = (TextView) findViewById(R.id.welcome);
+            mWelcome.setText(text);
+        }
         updateUI();
         clickItem();
 
@@ -185,6 +197,7 @@ public class WelcomeActivity extends AppCompatActivity {
             }
         }
 
+
         //Check if permission was acquired
         SharedPreferences LOC_pref = getApplicationContext().getSharedPreferences(LOC_KEY, MODE_PRIVATE);
         if(LOC_pref.getBoolean(LOC_PER, false)){
@@ -199,6 +212,7 @@ public class WelcomeActivity extends AppCompatActivity {
             int ret = jobScheduler.schedule(jobInfo);
             if (ret == JobScheduler.RESULT_SUCCESS) Log.d("FUCK", "Job scheduled again successfully!");
         }
+
     }
 
     @Override
@@ -291,9 +305,14 @@ public class WelcomeActivity extends AppCompatActivity {
 
         //Get stored username
         SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
-        SharedPreferences mypref = getApplicationContext().getSharedPreferences(LIST, MODE_PRIVATE);
+        SharedPreferences mypref = getApplicationContext().getSharedPreferences(LISTOFMEET, MODE_PRIVATE);
         String userName = pref.getString(KEY, null);
-        String uid = mDB.getUUID(userName, getApplicationContext());
+        String uid;
+        if(userName.equals("only_guest")){
+            uid = "just_guest";
+        }else {
+            uid = mDB.getUUID(userName, getApplicationContext());
+        }
 
         //Get a list of weekly events
         meetingsList = mDB.getWeeklyMeetings(uid, getApplicationContext());
