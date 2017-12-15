@@ -143,19 +143,9 @@ public class When2Leave extends JobService {
             Meetings meeting = null;
             Date date = null;
 
-            Gson gson = new Gson();
-            SharedPreferences listpref = getApplicationContext().getSharedPreferences(LISTOFMEET, MODE_PRIVATE);
-            String listStr = listpref.getString(LOM, null);
-            ListOfMeetings lom = new ListOfMeetings();
-            lom = gson.fromJson(listStr, ListOfMeetings.class);
-            if(lom != null) {
-                mEventAdapter = new DailyEventAdapter(getApplicationContext(), lom.getMeetings());
-                mEventAdapter.removeCompletedMeetings();
-                mEventAdapter.notifyDataSetChanged();
-            }
+            mDB = new DataBaseHelper(When2Leave.this);
 
             // Get a list of weekly events
-            mDB = new DataBaseHelper(When2Leave.this);
             SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
             String userName = pref.getString(KEY, null);
             String uid;
@@ -183,6 +173,11 @@ public class When2Leave extends JobService {
                 }
             }
 
+            if(meetingsList.size() > 0) {
+                if(meeting != null) {
+                    mDB.deleteEvent(getApplicationContext(), meeting);
+                }
+            }
             //get the current location
             if (mGoogleApiClient == null) {
                 mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
@@ -294,18 +289,9 @@ public class When2Leave extends JobService {
 
                             if(leftoverTime < 60*15) {
                                 Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);
-
-                                Gson gson = new Gson();
-                                SharedPreferences listpref = getApplicationContext().getSharedPreferences(LISTOFMEET, MODE_PRIVATE);
-                                String listStr = listpref.getString(LOM, null);
-                                ListOfMeetings lom = new ListOfMeetings();
-                                lom = gson.fromJson(listStr, ListOfMeetings.class);
-                                if(lom != null) {
-                                    mEventAdapter = new DailyEventAdapter(getApplicationContext(), lom.getMeetings());
-                                    mEventAdapter.setCompleteMeeting(meeting);
-                                    mEventAdapter.notifyDataSetChanged();
-                                }
-
+                                DataBaseHelper database = new DataBaseHelper(When2Leave.this);
+                                meeting.setComplete(true);
+                                database.updateEvent(getApplicationContext(), meeting);
                                 //Store meeting info in resultIntent
                                 String name = meeting.getTitle();
                                 String location = meeting.getDestination();

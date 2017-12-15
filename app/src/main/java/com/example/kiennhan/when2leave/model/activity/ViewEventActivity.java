@@ -36,6 +36,8 @@ import database.DataBaseHelper;
 public class ViewEventActivity extends AppCompatActivity {
 
     //Keys for storing data
+    private static final String KEY = "isLogin";
+    private static final String PREF = "MyPref";
     private static final String EVENTNAME = "eventname";
     private static final String LOCATIN = "location";
     private static final String TIME = "time";
@@ -194,12 +196,15 @@ public class ViewEventActivity extends AppCompatActivity {
      */
     public void updateDatabase(Meetings meeting){
         mDB = new DataBaseHelper(getApplicationContext());
-        mDB.deleteEvent(getApplicationContext(), meeting);
 
         SharedPreferences mypref = getApplicationContext().getSharedPreferences(UID, MODE_PRIVATE);
         String uid = mypref.getString(ACC_UID, null);
 
-        DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("account" + "/" + uid);
-        myRef.child(meeting.getId()).setValue(meeting);
+        SharedPreferences pref = getApplicationContext().getSharedPreferences(PREF, MODE_PRIVATE);
+        String userName = pref.getString(KEY, null);
+        if(!userName.equals("only_guest")) {
+            DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("account" + "/" + uid);
+            myRef.child(meeting.getId()).setValue(meeting);
+        }
     }
 }

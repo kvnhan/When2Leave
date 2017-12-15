@@ -620,7 +620,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(DbSchema.MeetingTable.Cols.TIME_ID, updatedMeeting.getTimeOfMeeting());
         values.put(DbSchema.MeetingTable.Cols.LOCATION_ID, updatedMeeting.getDestination());
         values.put(DbSchema.MeetingTable.Cols.DESCRIPTION, updatedMeeting.getDescription());
-        values.put(DbSchema.MeetingTable.Cols.ISCOMPLETE, "false");
+        if(!updatedMeeting.getComplete()) {
+            values.put(DbSchema.MeetingTable.Cols.ISCOMPLETE, "false");
+        }else{
+            values.put(DbSchema.MeetingTable.Cols.ISCOMPLETE, "true");
+        }
         int ret = mDatabase.update(DbSchema.MeetingTable.NAME, values,
                 DbSchema.MeetingTable.Cols.ID + "=?",
                 new String[]{updatedMeeting.getId()});
@@ -635,10 +639,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
      * @param deletedMeeting
      */
     public void deleteEvent(Context context, Meetings deletedMeeting) {
-        mDatabase = new DataBaseHelper(context).getWritableDatabase();
-        mDatabase.delete(DbSchema.MeetingTable.NAME, DbSchema.MeetingTable.Cols.ID + "=?",
-                new String[]{deletedMeeting.getId()});
-        mDatabase.close();
+        if(deletedMeeting.getComplete()) {
+            mDatabase = new DataBaseHelper(context).getWritableDatabase();
+            mDatabase.delete(DbSchema.MeetingTable.NAME, DbSchema.MeetingTable.Cols.ID + "=?",
+                    new String[]{deletedMeeting.getId()});
+            mDatabase.close();
+        }
     }
 
     public int getCount(Context context, String uid) {
