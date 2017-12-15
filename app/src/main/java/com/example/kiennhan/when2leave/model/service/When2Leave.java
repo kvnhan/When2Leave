@@ -285,7 +285,6 @@ public class When2Leave extends JobService {
                             //Calculate the remaining time user have left before notifying
                             long timeDiff = (meetingDate.getTime() - today.getTime().getTime()) / 1000;
                             long leftoverTime = timeDiff - (travelSeconds + 900);
-                            Log.d("FUCK", leftoverTime+" seconds leftover");
 
                             if(leftoverTime < 60*15) {
                                 Intent resultIntent = new Intent(When2Leave.this, ViewEventActivity.class);

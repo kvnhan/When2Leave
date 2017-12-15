@@ -119,7 +119,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private DataBaseHelper mDb;
     private boolean accountExist = true;
     private DatabaseReference myRef;
-    private boolean connected = false;
 
     private Boolean listenerCompleted = false;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -184,27 +183,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             email = savedInstanceState.getString(USER_NAME_SAVE);
             mEmailView.setText(email);
         }
-
-        //Check for connection to the firebase
-        myRef = FirebaseDatabase.getInstance().getReference(".info/connected");
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                connected = snapshot.getValue(Boolean.class);
-                if (connected) {
-                    listenerCompleted = true;
-                    System.out.println("connected");
-                } else {
-                    listenerCompleted = true;
-                    System.out.println("not connected");
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                System.err.println("Listener was cancelled");
-            }
-        });
 
         //Make reference to firebase
         myRef = FirebaseDatabase.getInstance().getReference(ACCOUNT);
@@ -420,8 +398,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             final String password = mPasswordView.getText().toString();
             final Password hp= new Password();
 
-            //Check if the application establish a connection to the firebase reference
-            if(connected) {
                 //Check the username/email against firebase
                 myRef.addListenerForSingleValueEvent((new ValueEventListener() {
                     @Override
@@ -442,8 +418,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                     listenerCompleted = true;
                                     accountExist = true;
                                     break;
-                                }else{
-                                    startDialogBox();
                                 }
                             } else {
                                 listenerCompleted = true;
@@ -459,28 +433,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     }
 
                 }));
-            }else {
-                //Authenticate with when2leave.db
-                Boolean accExist = mDb.checkAccount(getApplicationContext(), email, password);
-                String username = mDb.getUsername(email, getApplicationContext());
-                Gson gson = new Gson();
-                MapWrapper wrapper = new MapWrapper();
-                SharedPreferences pref = getApplicationContext().getSharedPreferences(PW, MODE_PRIVATE);
-                String wrapperStr = pref.getString(PASSWORD_SAFE, null);
-                wrapper = gson.fromJson(wrapperStr, MapWrapper.class);
-                HashMap<String, String> HtKpi = wrapper.getMyMap();
-                if(accExist){
-                    String hashP = HtKpi.get(username);
-                    //Check if password is the same
-                    if (hp.checkPassword(password, hashP)) {
-                        start(email);
-                    }else{
-                        startDialogBox();
-                    }
-                }
-
-                startDialogBox();
-            }
             return true;
         }
 
